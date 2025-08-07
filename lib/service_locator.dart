@@ -1,3 +1,6 @@
+import 'package:flossy/domain/usecases/add_money_source.dart';
+import 'package:flossy/domain/usecases/get_all_money_sources.dart';
+import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,9 +33,6 @@ Future<void> initializeDependencies() async {
   // # Data Sources
   // ####################
 
-  // تسجيل مصدر البيانات المحلي
-  // نستخدم registerLazySingleton لتوفير الموارد، حيث لن يتم إنشاؤه
-  // إلا عند أول مرة يتم طلبه فيها.
   sl.registerLazySingleton<MoneySourceLocalDataSource>(
     () => MoneySourceLocalDataSourceImpl(isar: sl()),
   );
@@ -41,10 +41,23 @@ Future<void> initializeDependencies() async {
   // # Repositories
   // ####################
 
-  // تسجيل مستودع البيانات
   sl.registerLazySingleton<MoneySourceRepository>(
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
 
-  // --- سنضيف تسجيل الـ Cubits هنا لاحقًا ---
+  // ####################
+  // # Use Cases
+  // ####################
+
+  sl.registerLazySingleton(() => GetAllMoneySources(sl()));
+  sl.registerLazySingleton(() => AddMoneySource(sl()));
+  // ... سنضيف بقية الـ Use Cases هنا
+
+  // ####################
+  // # Cubits (Business Logic Components)
+  // ####################
+
+  // نستخدم registerFactory للـ Cubits لأننا قد نحتاج إلى نسخة جديدة
+  // منها في كل مرة نفتح فيها شاشة معينة.
+  sl.registerFactory(() => MoneySourcesCubit(getAllMoneySourcesUseCase: sl()));
 }
