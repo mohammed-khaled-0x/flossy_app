@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flossy/service_locator.dart'; // 1. استيراد ملف حقن التبعية
 
-void main() {
-  // هنا سنضيف أي إعدادات ضرورية قبل تشغيل التطبيق في المستقبل
-  // (مثل تهيئة قواعد البيانات، خدمات تحديد المواقع، إلخ)
+Future<void> main() async {
+  // 2. تحويل الدالة إلى async
+  // 3. ضمان تهيئة Flutter أولاً قبل أي عمليات أخرى
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 4. استدعاء دالة تهيئة التبعيات وقاعدة البيانات
+  await initializeDependencies();
+
   runApp(const FlossyApp());
 }
 
@@ -12,15 +18,9 @@ class FlossyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // لإزالة علامة "Debug" من أعلى يمين الشاشة
       debugShowCheckedModeBanner: false,
-
-      // هنا سنحدد لاحقًا الثيم (الألوان والخطوط) الخاص بالتطبيق بالكامل
       theme: ThemeData(useMaterial3: true, primarySwatch: Colors.teal),
-
-      // نقطة البداية لواجهات المستخدم في تطبيقنا
-      // سنقوم بإنشاء هذا الملف في الخطوات القادمة
-      home: const Scaffold(body: Center(child: Text('قيد الإنشاء...'))),
+      home: const Scaffold(body: Center(child: Text('تمت التهيئة بنجاح!'))),
     );
   }
 }
