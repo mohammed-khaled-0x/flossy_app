@@ -17,7 +17,7 @@ class MoneySourceRepositoryImpl implements MoneySourceRepository {
   }
 
   @override
-  Future<void> deleteMoneySource(String id) async {
+  Future<void> deleteMoneySource(int id) async {
     await localDataSource.deleteMoneySource(id);
   }
 

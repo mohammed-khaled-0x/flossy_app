@@ -8,7 +8,7 @@ class Transaction extends Equatable {
   final TransactionType type;
   final DateTime date;
   final String description;
-  final String sourceId;
+  final int sourceId;
   final String? categoryId;
 
   const Transaction({

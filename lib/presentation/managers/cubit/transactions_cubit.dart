@@ -47,7 +47,7 @@ class TransactionsCubit extends Cubit<TransactionsState> {
     required double amount,
     required TransactionType type,
     required String description,
-    required String sourceId,
+    required int sourceId,
     String? categoryId,
   }) async {
     final currentState = state;

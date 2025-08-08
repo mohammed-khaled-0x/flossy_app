@@ -1,21 +1,17 @@
+// lib/data/models/money_source_model.dart
+
 import 'package:isar/isar.dart';
 import '../../domain/entities/money_source.dart';
 
-// هذا السطر يخبر مولد الكود أن هذا الملف يحتاج إلى معالجة
 part 'money_source_model.g.dart';
 
 @collection
 class MoneySourceModel {
-  // --- START: The Fix ---
-  /// منشئ فارغ وغير مسمى، مطلوب بواسطة isar_generator.
   MoneySourceModel();
-  // --- END: The Fix ---
 
-  // Isar تستخدم Id بدلاً من int لضمان التفرد والأداء العالي
-  Id isarId = Isar.autoIncrement;
-
-  @Index(unique: true, replace: true)
-  late String id;
+  // Isar uses Id type for auto-incrementing primary keys.
+  // This will be our SINGLE source of truth for the ID.
+  Id id = Isar.autoIncrement;
 
   late String name;
   late double balance;
@@ -24,10 +20,11 @@ class MoneySourceModel {
   @enumerated
   late SourceType type;
 
-  // دالة لتحويل النموذج (Model) إلى الكيان (Entity) النقي
+  // Converts the data model (this class) to a clean business entity.
+  // The UI layer will only interact with the MoneySource entity.
   MoneySource toEntity() {
     return MoneySource(
-      id: id,
+      id: id, // We pass the Isar Id directly.
       name: name,
       balance: balance,
       iconName: iconName,
@@ -35,11 +32,12 @@ class MoneySourceModel {
     );
   }
 
-  // دالة لإنشاء النموذج (Model) من الكيان (Entity) النقي
-  // نستخدمها عندما نريد حفظ كيان في قاعدة البيانات
+  // Creates a data model from a clean business entity.
+  // We use this when we need to save or update an entity in the database.
   factory MoneySourceModel.fromEntity(MoneySource entity) {
     return MoneySourceModel()
-      ..id = entity.id
+      ..id = entity
+          .id // The entity's ID is now assigned to the Isar ID.
       ..name = entity.name
       ..balance = entity.balance
       ..iconName = entity.iconName

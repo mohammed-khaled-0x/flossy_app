@@ -16,6 +16,7 @@ import 'data/repositories/transaction_repository_impl.dart';
 import 'domain/repositories/money_source_repository.dart';
 import 'domain/repositories/transaction_repository.dart';
 import 'domain/usecases/add_transaction_and_update_source.dart';
+import 'domain/usecases/perform_internal_transfer.dart';
 import 'domain/usecases/add_money_source.dart';
 import 'domain/usecases/add_transaction.dart';
 import 'domain/usecases/get_all_money_sources.dart';
@@ -49,10 +50,7 @@ Future<void> initializeDependencies() async {
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(
-      transactionLocalDataSource: sl(),
-      moneySourceLocalDataSource: sl(),
-    ),
+    () => TransactionRepositoryImpl(transactionLocalDataSource: sl()),
   );
 
   // --- UseCases ---
@@ -62,6 +60,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
   sl.registerLazySingleton(() => AddTransactionAndUpdateSource(sl()));
+  sl.registerLazySingleton(() => PerformInternalTransfer(sl()));
   // --- Cubits ---
   // These are core application state managers. We register them as LazySingletons
   // to ensure there is only ONE instance of each throughout the app's lifecycle.

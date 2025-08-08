@@ -27,18 +27,13 @@ const MoneySourceModelSchema = CollectionSchema(
       name: r'iconName',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
-      id: 2,
-      name: r'id',
-      type: IsarType.string,
-    ),
     r'name': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'name',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'type',
       type: IsarType.byte,
       enumMap: _MoneySourceModeltypeEnumValueMap,
@@ -48,22 +43,8 @@ const MoneySourceModelSchema = CollectionSchema(
   serialize: _moneySourceModelSerialize,
   deserialize: _moneySourceModelDeserialize,
   deserializeProp: _moneySourceModelDeserializeProp,
-  idName: r'isarId',
-  indexes: {
-    r'id': IndexSchema(
-      id: -3268401673993471357,
-      name: r'id',
-      unique: true,
-      replace: true,
-      properties: [
-        IndexPropertySchema(
-          name: r'id',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    )
-  },
+  idName: r'id',
+  indexes: {},
   links: {},
   embeddedSchemas: {},
   getId: _moneySourceModelGetId,
@@ -79,7 +60,6 @@ int _moneySourceModelEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.iconName.length * 3;
-  bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.name.length * 3;
   return bytesCount;
 }
@@ -92,9 +72,8 @@ void _moneySourceModelSerialize(
 ) {
   writer.writeDouble(offsets[0], object.balance);
   writer.writeString(offsets[1], object.iconName);
-  writer.writeString(offsets[2], object.id);
-  writer.writeString(offsets[3], object.name);
-  writer.writeByte(offsets[4], object.type.index);
+  writer.writeString(offsets[2], object.name);
+  writer.writeByte(offsets[3], object.type.index);
 }
 
 MoneySourceModel _moneySourceModelDeserialize(
@@ -106,11 +85,10 @@ MoneySourceModel _moneySourceModelDeserialize(
   final object = MoneySourceModel();
   object.balance = reader.readDouble(offsets[0]);
   object.iconName = reader.readString(offsets[1]);
-  object.id = reader.readString(offsets[2]);
-  object.isarId = id;
-  object.name = reader.readString(offsets[3]);
+  object.id = id;
+  object.name = reader.readString(offsets[2]);
   object.type =
-      _MoneySourceModeltypeValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+      _MoneySourceModeltypeValueEnumMap[reader.readByteOrNull(offsets[3])] ??
           SourceType.cash;
   return object;
 }
@@ -129,8 +107,6 @@ P _moneySourceModelDeserializeProp<P>(
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
       return (_MoneySourceModeltypeValueEnumMap[
               reader.readByteOrNull(offset)] ??
           SourceType.cash) as P;
@@ -151,7 +127,7 @@ const _MoneySourceModeltypeValueEnumMap = {
 };
 
 Id _moneySourceModelGetId(MoneySourceModel object) {
-  return object.isarId;
+  return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _moneySourceModelGetLinks(MoneySourceModel object) {
@@ -160,67 +136,12 @@ List<IsarLinkBase<dynamic>> _moneySourceModelGetLinks(MoneySourceModel object) {
 
 void _moneySourceModelAttach(
     IsarCollection<dynamic> col, Id id, MoneySourceModel object) {
-  object.isarId = id;
-}
-
-extension MoneySourceModelByIndex on IsarCollection<MoneySourceModel> {
-  Future<MoneySourceModel?> getById(String id) {
-    return getByIndex(r'id', [id]);
-  }
-
-  MoneySourceModel? getByIdSync(String id) {
-    return getByIndexSync(r'id', [id]);
-  }
-
-  Future<bool> deleteById(String id) {
-    return deleteByIndex(r'id', [id]);
-  }
-
-  bool deleteByIdSync(String id) {
-    return deleteByIndexSync(r'id', [id]);
-  }
-
-  Future<List<MoneySourceModel?>> getAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndex(r'id', values);
-  }
-
-  List<MoneySourceModel?> getAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'id', values);
-  }
-
-  Future<int> deleteAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'id', values);
-  }
-
-  int deleteAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'id', values);
-  }
-
-  Future<Id> putById(MoneySourceModel object) {
-    return putByIndex(r'id', object);
-  }
-
-  Id putByIdSync(MoneySourceModel object, {bool saveLinks = true}) {
-    return putByIndexSync(r'id', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllById(List<MoneySourceModel> objects) {
-    return putAllByIndex(r'id', objects);
-  }
-
-  List<Id> putAllByIdSync(List<MoneySourceModel> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
-  }
+  object.id = id;
 }
 
 extension MoneySourceModelQueryWhereSort
     on QueryBuilder<MoneySourceModel, MoneySourceModel, QWhere> {
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhere> anyIsarId() {
+  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -229,116 +150,70 @@ extension MoneySourceModelQueryWhereSort
 
 extension MoneySourceModelQueryWhere
     on QueryBuilder<MoneySourceModel, MoneySourceModel, QWhereClause> {
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
+  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
+        lower: id,
+        upper: id,
       ));
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
+  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
+        lower: lowerId,
         includeLower: includeLower,
-        upper: upperIsarId,
+        upper: upperId,
         includeUpper: includeUpper,
       ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause> idEqualTo(
-      String id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'id',
-        value: [id],
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterWhereClause>
-      idNotEqualTo(String id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ));
-      }
     });
   }
 }
@@ -548,181 +423,45 @@ extension MoneySourceModelQueryFilter
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
       idGreaterThan(
-    String value, {
+    Id value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
       idLessThan(
-    String value, {
+    Id value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
       idBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      idIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterFilterCondition>
-      isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -730,7 +469,7 @@ extension MoneySourceModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
+        property: r'id',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -968,19 +707,6 @@ extension MoneySourceModelQuerySortBy
     });
   }
 
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy> sortById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy>
-      sortByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1051,20 +777,6 @@ extension MoneySourceModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy>
-      thenByIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy>
-      thenByIsarIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
-    });
-  }
-
   QueryBuilder<MoneySourceModel, MoneySourceModel, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1108,13 +820,6 @@ extension MoneySourceModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<MoneySourceModel, MoneySourceModel, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<MoneySourceModel, MoneySourceModel, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1131,9 +836,9 @@ extension MoneySourceModelQueryWhereDistinct
 
 extension MoneySourceModelQueryProperty
     on QueryBuilder<MoneySourceModel, MoneySourceModel, QQueryProperty> {
-  QueryBuilder<MoneySourceModel, int, QQueryOperations> isarIdProperty() {
+  QueryBuilder<MoneySourceModel, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addPropertyName(r'id');
     });
   }
 
@@ -1146,12 +851,6 @@ extension MoneySourceModelQueryProperty
   QueryBuilder<MoneySourceModel, String, QQueryOperations> iconNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'iconName');
-    });
-  }
-
-  QueryBuilder<MoneySourceModel, String, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
     });
   }
 

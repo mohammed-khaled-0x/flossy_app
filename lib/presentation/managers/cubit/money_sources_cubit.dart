@@ -20,7 +20,7 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
     required this.addMoneySourceUseCase,
   }) : super(MoneySourcesInitial());
 
-  MoneySource? getSourceById(String id) {
+  MoneySource? getSourceById(int id) {
     final currentState = state;
     if (currentState is MoneySourcesLoaded) {
       try {
@@ -56,7 +56,7 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
 
     try {
       final newSource = MoneySource(
-        id: const Uuid().v4(),
+        id: 0,
         name: name,
         balance: balance,
         iconName: iconName,

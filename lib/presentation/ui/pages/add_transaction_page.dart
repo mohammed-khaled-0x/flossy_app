@@ -1,8 +1,10 @@
+// lib/presentation/ui/pages/add_transaction_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:isar/isar.dart'; // نحتاجها لجلب الفئات
-import 'package:flossy/service_locator.dart'; // نحتاجها لجلب isar
-import '../../../data/models/category_model.dart'; // نحتاجها لجلب الفئات
+import 'package:isar/isar.dart';
+import 'package:flossy/service_locator.dart';
+import '../../../data/models/category_model.dart';
 import '../../../domain/entities/money_source.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../managers/cubit/transactions_cubit.dart';
@@ -22,27 +24,27 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final _amountController = TextEditingController();
 
   TransactionType _selectedTxType = TransactionType.expense;
-  String? _selectedSourceId;
+  // --- CHANGE 1: The variable is now an integer ---
+  int? _selectedSourceId;
   String? _selectedCategoryId;
   List<CategoryModel> _categories = [];
 
   @override
   void initState() {
     super.initState();
-    // تحديد قيمة أولية لمصدر الأموال إذا كانت القائمة غير فارغة
+    // Set the initial value for the money source if the list is not empty
     if (widget.moneySources.isNotEmpty) {
       _selectedSourceId = widget.moneySources.first.id;
     }
     _loadCategories();
   }
 
-  // دالة لجلب الفئات من قاعدة البيانات مباشرة
   Future<void> _loadCategories() async {
     final isar = sl<Isar>();
     final cats = await isar.categoryModels.where().findAll();
     setState(() {
       _categories = cats;
-      // تحديد قيمة أولية للفئة إذا كانت القائمة غير فارغة
+      // Set the initial value for the category if the list is not empty
       if (_categories.isNotEmpty) {
         _selectedCategoryId = _categories.first.id;
       }
@@ -58,7 +60,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // استدعاء دالة الإضافة في الـ Cubit
+      // --- CHANGE 2: No changes here, as the variable is already the correct type ---
       context.read<TransactionsCubit>().addNewTransaction(
         amount: double.parse(_amountController.text),
         type: _selectedTxType,
@@ -68,7 +70,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             ? _selectedCategoryId
             : null,
       );
-      // إغلاق الشاشة الحالية
       Navigator.of(context).pop();
     }
   }
@@ -83,7 +84,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           key: _formKey,
           child: ListView(
             children: [
-              // أزرار اختيار النوع (صرف / دخل)
               SegmentedButton<TransactionType>(
                 segments: const [
                   ButtonSegment(
@@ -106,7 +106,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               ),
               const SizedBox(height: 24),
 
-              // بقية حقول الفورم
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'الوصف'),
@@ -127,11 +126,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               ),
               const SizedBox(height: 16),
 
-              // قائمة منسدلة لمصادر الأموال
-              DropdownButtonFormField<String>(
+              // --- CHANGE 3: The Dropdown now works with integers ---
+              DropdownButtonFormField<int>(
                 value: _selectedSourceId,
                 items: widget.moneySources.map((source) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<int>(
+                    // Explicitly define the type here
                     value: source.id,
                     child: Text(source.name),
                   );
@@ -142,7 +142,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               ),
               const SizedBox(height: 16),
 
-              // قائمة منسدلة للفئات (تظهر فقط في حالة الصرف)
               if (_selectedTxType == TransactionType.expense)
                 DropdownButtonFormField<String>(
                   value: _selectedCategoryId,

@@ -23,7 +23,7 @@ class TransactionModel {
 
   // لفهرسة هذا الحقل لتسريع عمليات البحث والفلترة حسب المصدر
   @Index()
-  late String sourceId;
+  late int sourceId;
 
   // لفهرسة هذا الحقل لتسريع عمليات البحث والفلترة حسب الفئة
   @Index()
