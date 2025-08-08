@@ -1,7 +1,12 @@
-import 'package:flossy/data/models/category_model.dart'; // 1. استيراد النموذج الجديد
-import 'package:flossy/data/models/transaction_model.dart'; // 1. استيراد النموذج الجديد
+import 'package:flossy/data/datasources/local/transaction_local_datasource.dart';
+import 'package:flossy/data/models/category_model.dart';
+import 'package:flossy/data/models/transaction_model.dart';
+import 'package:flossy/data/repositories/transaction_repository_impl.dart';
+import 'package:flossy/domain/repositories/transaction_repository.dart';
 import 'package:flossy/domain/usecases/add_money_source.dart';
+import 'package:flossy/domain/usecases/add_transaction.dart';
 import 'package:flossy/domain/usecases/get_all_money_sources.dart';
+import 'package:flossy/domain/usecases/get_all_transactions.dart';
 import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
@@ -21,16 +26,12 @@ Future<void> initializeDependencies() async {
   // # External
   // ####################
 
-  // تهيئة قاعدة بيانات Isar
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open([
-    // 2. إضافة الـ Schemas الجديدة هنا
     MoneySourceModelSchema,
     TransactionModelSchema,
     CategoryModelSchema,
   ], directory: dir.path);
-
-  // تسجيل نسخة Isar المفتوحة كـ Singleton
   sl.registerSingleton<Isar>(isar);
 
   // ####################
@@ -40,8 +41,9 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<MoneySourceLocalDataSource>(
     () => MoneySourceLocalDataSourceImpl(isar: sl()),
   );
-
-  // --- سنضيف TransactionDataSource هنا لاحقًا ---
+  sl.registerLazySingleton<TransactionLocalDataSource>(
+    () => TransactionLocalDataSourceImpl(isar: sl()),
+  );
 
   // ####################
   // # Repositories
@@ -50,17 +52,21 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<MoneySourceRepository>(
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
-
-  // --- سنضيف TransactionRepository هنا لاحقًا ---
+  sl.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(localDataSource: sl()),
+  );
 
   // ####################
   // # Use Cases
   // ####################
 
+  // -- MoneySource Use Cases --
   sl.registerLazySingleton(() => GetAllMoneySources(sl()));
   sl.registerLazySingleton(() => AddMoneySource(sl()));
 
-  // --- سنضيف Transaction Use Cases هنا لاحقًا ---
+  // -- Transaction Use Cases --
+  sl.registerLazySingleton(() => GetAllTransactions(sl()));
+  sl.registerLazySingleton(() => AddTransaction(sl()));
 
   // ####################
   // # Cubits (Business Logic Components)
