@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart'; // حزمة لتنسيق التواريخ
+import 'package:intl/intl.dart';
 import '../../../domain/entities/transaction.dart';
-import '../../../service_locator.dart';
 import '../../managers/cubit/transactions_cubit.dart';
 import '../../managers/state/transactions_state.dart';
 
@@ -11,18 +10,7 @@ class TransactionsHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<TransactionsCubit>()..fetchAllTransactions(),
-      child: const _TransactionsHistoryView(),
-    );
-  }
-}
-
-class _TransactionsHistoryView extends StatelessWidget {
-  const _TransactionsHistoryView();
-
-  @override
-  Widget build(BuildContext context) {
+    // تم حذف الـ BlocProvider من هنا
     return Scaffold(
       appBar: AppBar(
         title: const Text('سجل الحركات'),
@@ -74,7 +62,6 @@ class _TransactionsHistoryView extends StatelessWidget {
                     ),
                     title: Text(transaction.description),
                     subtitle: Text(
-                      // نستخدم حزمة intl لتنسيق التاريخ بشكل جميل
                       DateFormat.yMMMd(
                         'ar_EG',
                       ).add_jm().format(transaction.date),
@@ -94,7 +81,7 @@ class _TransactionsHistoryView extends StatelessWidget {
               },
             );
           }
-          return const SizedBox.shrink(); // في الحالات الأخرى، نعرض لا شيء
+          return const SizedBox.shrink();
         },
       ),
     );

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // 1. استيراد لدعم اللغة
-import 'package:flossy/presentation/ui/pages/main_page.dart'; // 2. استيراد MainPage
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
+import 'package:flossy/presentation/managers/cubit/transactions_cubit.dart';
+import 'package:flossy/presentation/ui/pages/main_page.dart';
 import 'package:flossy/service_locator.dart';
-import 'package:intl/date_symbol_data_local.dart'; // 3. استيراد لدعم تواريخ intl
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 4. تهيئة بيانات اللغة العربية لحزمة intl
   await initializeDateFormatting('ar_EG', null);
-
   await initializeDependencies();
   runApp(const FlossyApp());
 }
@@ -19,29 +19,34 @@ class FlossyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'فلوسي',
-      debugShowCheckedModeBanner: false,
-
-      // 5. إضافة دعم اللغات والاتجاه
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+    // نستخدم MultiBlocProvider لتوفير كل الـ Cubits الرئيسية للتطبيق
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<MoneySourcesCubit>()..fetchAllMoneySources(),
+        ),
+        BlocProvider(
+          create: (_) => sl<TransactionsCubit>()..fetchAllTransactions(),
+        ),
       ],
-      supportedLocales: const [
-        Locale('ar', 'EG'), // اللغة العربية
-      ],
-      locale: const Locale('ar', 'EG'), // تحديد اللغة الافتراضية
-
-      theme: ThemeData(
-        useMaterial3: true,
-        primarySwatch: Colors.teal,
-        fontFamily: 'Tajawal', // سنقوم بإضافة هذا الخط لاحقًا
+      child: MaterialApp(
+        title: 'فلوسي',
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('ar', 'EG')],
+        locale: const Locale('ar', 'EG'),
+        theme: ThemeData(
+          useMaterial3: true,
+          primarySwatch: Colors.teal,
+          fontFamily: 'Tajawal',
+        ),
+        // MainPage ستتمكن الآن من الوصول إلى الـ Cubits مباشرة
+        home: const MainPage(),
       ),
-
-      // 6. تحديد الصفحة الرئيسية لتكون MainPage
-      home: const MainPage(),
     );
   }
 }

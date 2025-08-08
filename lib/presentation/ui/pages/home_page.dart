@@ -1,31 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/money_source.dart'; // استيراد الـ enum
-import '../../../service_locator.dart';
+import '../../../domain/entities/money_source.dart';
 import '../../managers/cubit/money_sources_cubit.dart';
 import '../../managers/state/money_sources_state.dart';
 import 'add_edit_money_source_page.dart';
 
+// الصفحة أصبحت أبسط بكثير، مجرد StatelessWidget
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // الـ HomePage الآن وظيفته فقط هي توفير الـ Cubit
-    return BlocProvider(
-      create: (context) => sl<MoneySourcesCubit>()..fetchAllMoneySources(),
-      child: const _HomePageView(), // نعرض الـ Widget الداخلي الجديد
-    );
-  }
-}
-
-// هذا هو الـ Widget الداخلي الذي يحتوي على الواجهة الفعلية
-class _HomePageView extends StatelessWidget {
-  const _HomePageView();
-
-  @override
-  Widget build(BuildContext context) {
-    // الـ `context` هنا هو "ابن" للـ BlocProvider، لذلك يمكنه إيجاد الـ Cubit
+    // لم نعد بحاجة لـ BlocProvider هنا
     return Scaffold(
       appBar: AppBar(
         title: const Text('مصادر فلوسك'),
@@ -118,20 +104,8 @@ class _HomePageView extends StatelessWidget {
           return const Center(child: Text('جاري تهيئة الصفحة...'));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: context.read<MoneySourcesCubit>(),
-                child: const AddEditMoneySourcePage(),
-              ),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-        tooltip: 'إضافة مصدر جديد',
-      ),
+      // الزر العائم لم يعد بحاجة إلى هذا الملف، سننقله إلى MainPage
+      // floatingActionButton: ...
     );
   }
 }
