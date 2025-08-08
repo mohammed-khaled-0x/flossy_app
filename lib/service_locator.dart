@@ -59,5 +59,10 @@ Future<void> initializeDependencies() async {
 
   // نستخدم registerFactory للـ Cubits لأننا قد نحتاج إلى نسخة جديدة
   // منها في كل مرة نفتح فيها شاشة معينة.
-  sl.registerFactory(() => MoneySourcesCubit(getAllMoneySourcesUseCase: sl()));
+  sl.registerFactory(
+    () => MoneySourcesCubit(
+      getAllMoneySourcesUseCase: sl(),
+      addMoneySourceUseCase: sl(), // التحديث هنا
+    ),
+  );
 }
