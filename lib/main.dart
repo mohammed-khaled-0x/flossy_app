@@ -29,15 +29,26 @@ class FlossyApp extends StatelessWidget {
     // MultiBlocProvider is the perfect place to provide all our global-state Cubits.
     return MultiBlocProvider(
       providers: [
-        // These two Cubits fetch data from the database.
-        BlocProvider(create: (_) => sl<MoneySourcesCubit>()),
-        BlocProvider(create: (_) => sl<TransactionsCubit>()),
-
-        // This Cubit depends on the ones above. It will be created here and will
-        // automatically start listening to them.
+        // These Cubits fetch data from the database.
+        // We trigger the fetch operation immediately after creation.
         BlocProvider(
-          // <<<--- تمت إضافة هذا الجزء
-          create: (context) => sl<DashboardCubit>()..loadInitialData(),
+          create: (_) =>
+              sl<MoneySourcesCubit>()
+                ..fetchAllMoneySources(), // <<<--- تم التعديل هنا
+        ),
+        BlocProvider(
+          create: (_) =>
+              sl<TransactionsCubit>()
+                ..fetchAllTransactions(), // <<<--- تم التعديل هنا
+        ),
+
+        // This Cubit depends on the ones above. It will listen to them
+        // automatically after they are created and have fetched their data.
+        BlocProvider(
+          create: (context) => sl<DashboardCubit>(),
+          // We no longer need to call loadInitialData() here, because as soon as
+          // the cubits above finish loading, DashboardCubit will be notified
+          // and will process the data automatically.
         ),
       ],
       child: MaterialApp(
@@ -56,11 +67,11 @@ class FlossyApp extends StatelessWidget {
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.teal,
-            brightness: Brightness.dark, // لتفعيل الثيم الغامق
+            brightness: Brightness.dark,
           ),
           fontFamily: 'Tajawal',
-          scaffoldBackgroundColor: const Color(0xFF121212), // لون خلفية داكن
-          cardColor: const Color(0xFF1E1E1E), // لون الكروت
+          scaffoldBackgroundColor: const Color(0xFF121212),
+          cardColor: const Color(0xFF1E1E1E),
         ),
         home: const MainPage(),
       ),
