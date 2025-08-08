@@ -1,28 +1,35 @@
-import 'package:flossy/data/datasources/local/transaction_local_datasource.dart';
-import 'package:flossy/data/models/category_model.dart';
-import 'package:flossy/data/models/transaction_model.dart';
-import 'package:flossy/data/repositories/transaction_repository_impl.dart';
-import 'package:flossy/domain/repositories/transaction_repository.dart';
-import 'package:flossy/domain/usecases/add_money_source.dart';
-import 'package:flossy/domain/usecases/add_transaction.dart';
-import 'package:flossy/domain/usecases/get_all_money_sources.dart';
-import 'package:flossy/domain/usecases/get_all_transactions.dart';
-import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
-import 'package:flossy/presentation/managers/cubit/transactions_cubit.dart';
+// Imports from external packages
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
+// Data Layer Imports
 import 'data/datasources/local/money_source_local_datasource.dart';
+import 'data/datasources/local/transaction_local_datasource.dart';
+import 'data/models/category_model.dart';
 import 'data/models/money_source_model.dart';
+import 'data/models/transaction_model.dart';
 import 'data/repositories/money_source_repository_impl.dart';
+import 'data/repositories/transaction_repository_impl.dart';
+
+// Domain Layer Imports
 import 'domain/repositories/money_source_repository.dart';
+import 'domain/repositories/transaction_repository.dart';
+import 'domain/usecases/add_money_source.dart';
+import 'domain/usecases/add_transaction.dart';
+import 'domain/usecases/get_all_money_sources.dart';
+import 'domain/usecases/get_all_transactions.dart';
+import 'domain/usecases/update_money_source.dart';
+
+// Presentation Layer Imports
+import 'presentation/managers/cubit/dashboard_cubit.dart'; // <<<--- 1. استيراد جديد
+import 'presentation/managers/cubit/money_sources_cubit.dart';
+import 'presentation/managers/cubit/transactions_cubit.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
-  // ... (كل الأكواد السابقة كما هي)
-
+  // --- Database ---
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open([
     MoneySourceModelSchema,
@@ -31,11 +38,10 @@ Future<void> initializeDependencies() async {
   ], directory: dir.path);
   sl.registerSingleton<Isar>(isar);
 
-  // استدعاء دالة إضافة البيانات الافتراضية
+  // Seed database with default data if needed
   await _seedDefaultData(isar);
 
-  // ... (بقية تسجيلات التبعية كما هي)
-
+  // --- DataSources ---
   sl.registerLazySingleton<MoneySourceLocalDataSource>(
     () => MoneySourceLocalDataSourceImpl(isar: sl()),
   );
@@ -43,6 +49,7 @@ Future<void> initializeDependencies() async {
     () => TransactionLocalDataSourceImpl(isar: sl()),
   );
 
+  // --- Repositories ---
   sl.registerLazySingleton<MoneySourceRepository>(
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
@@ -50,35 +57,44 @@ Future<void> initializeDependencies() async {
     () => TransactionRepositoryImpl(localDataSource: sl()),
   );
 
+  // --- UseCases ---
   sl.registerLazySingleton(() => GetAllMoneySources(sl()));
   sl.registerLazySingleton(() => AddMoneySource(sl()));
+  sl.registerLazySingleton(() => UpdateMoneySource(sl()));
 
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
 
+  // --- Cubits ---
+  // Cubits that have their own data fetching logic
   sl.registerFactory(
     () => MoneySourcesCubit(
       getAllMoneySourcesUseCase: sl(),
       addMoneySourceUseCase: sl(),
     ),
   );
-
   sl.registerFactory(
     () => TransactionsCubit(
       getAllTransactionsUseCase: sl(),
       addTransactionUseCase: sl(),
-      moneySourceRepository: sl(),
-      moneySourcesCubit: sl(), // GetIt سيبحث عن MoneySourcesCubit المسجل ويمرره
+      updateMoneySourceUseCase: sl(),
+      getAllMoneySourcesUseCase: sl(),
+      moneySourcesCubit: sl(),
     ),
+  );
+
+  // Cubits that depend on other cubits (should be registered last)
+  sl.registerFactory(
+    // <<<--- 2. تم إضافة التسجيل الجديد
+    () => DashboardCubit(moneySourcesCubit: sl(), transactionsCubit: sl()),
   );
 }
 
-/// دالة لإضافة البيانات الافتراضية (مثل الفئات) عند أول تشغيل
+/// Seeds the database with default categories on the first run.
 Future<void> _seedDefaultData(Isar isar) async {
-  // تحقق مما إذا كانت هناك أي فئات موجودة بالفعل
+  // ... (الكود هنا كما هو دون تغيير)
   final count = await isar.categoryModels.count();
   if (count == 0) {
-    // إذا كانت قاعدة البيانات فارغة، أضف الفئات الافتراضية
     final defaultCategories = [
       CategoryModel()
         ..id = 'cat_food'
@@ -122,7 +138,6 @@ Future<void> _seedDefaultData(Isar isar) async {
         ..iconName = 'laptop_chromebook',
     ];
 
-    // حفظ الفئات الجديدة في قاعدة البيانات
     await isar.writeTxn(() async {
       await isar.categoryModels.putAll(defaultCategories);
     });
