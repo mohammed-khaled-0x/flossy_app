@@ -8,6 +8,7 @@ import 'package:flossy/domain/usecases/add_transaction.dart';
 import 'package:flossy/domain/usecases/get_all_money_sources.dart';
 import 'package:flossy/domain/usecases/get_all_transactions.dart';
 import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
+import 'package:flossy/presentation/managers/cubit/transactions_cubit.dart'; // 1. استيراد الـ Cubit الجديد
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -60,11 +61,9 @@ Future<void> initializeDependencies() async {
   // # Use Cases
   // ####################
 
-  // -- MoneySource Use Cases --
   sl.registerLazySingleton(() => GetAllMoneySources(sl()));
   sl.registerLazySingleton(() => AddMoneySource(sl()));
 
-  // -- Transaction Use Cases --
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
 
@@ -79,5 +78,13 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // --- سنضيف Transaction Cubit هنا لاحقًا ---
+  // 2. تسجيل الـ Cubit الجديد مع كل تبعياته
+  sl.registerFactory(
+    () => TransactionsCubit(
+      getAllTransactionsUseCase: sl(),
+      addTransactionUseCase: sl(),
+      moneySourceRepository:
+          sl(), // GetIt سيقوم بتمرير الـ Repository المطلوب تلقائيًا
+    ),
+  );
 }
