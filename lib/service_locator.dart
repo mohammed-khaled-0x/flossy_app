@@ -1,3 +1,5 @@
+import 'package:flossy/data/models/category_model.dart'; // 1. استيراد النموذج الجديد
+import 'package:flossy/data/models/transaction_model.dart'; // 1. استيراد النموذج الجديد
 import 'package:flossy/domain/usecases/add_money_source.dart';
 import 'package:flossy/domain/usecases/get_all_money_sources.dart';
 import 'package:flossy/presentation/managers/cubit/money_sources_cubit.dart';
@@ -21,10 +23,12 @@ Future<void> initializeDependencies() async {
 
   // تهيئة قاعدة بيانات Isar
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
-    [MoneySourceModelSchema], // نخبر Isar بكل الـ Schemas التي لدينا
-    directory: dir.path,
-  );
+  final isar = await Isar.open([
+    // 2. إضافة الـ Schemas الجديدة هنا
+    MoneySourceModelSchema,
+    TransactionModelSchema,
+    CategoryModelSchema,
+  ], directory: dir.path);
 
   // تسجيل نسخة Isar المفتوحة كـ Singleton
   sl.registerSingleton<Isar>(isar);
@@ -37,6 +41,8 @@ Future<void> initializeDependencies() async {
     () => MoneySourceLocalDataSourceImpl(isar: sl()),
   );
 
+  // --- سنضيف TransactionDataSource هنا لاحقًا ---
+
   // ####################
   // # Repositories
   // ####################
@@ -45,24 +51,27 @@ Future<void> initializeDependencies() async {
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
 
+  // --- سنضيف TransactionRepository هنا لاحقًا ---
+
   // ####################
   // # Use Cases
   // ####################
 
   sl.registerLazySingleton(() => GetAllMoneySources(sl()));
   sl.registerLazySingleton(() => AddMoneySource(sl()));
-  // ... سنضيف بقية الـ Use Cases هنا
+
+  // --- سنضيف Transaction Use Cases هنا لاحقًا ---
 
   // ####################
   // # Cubits (Business Logic Components)
   // ####################
 
-  // نستخدم registerFactory للـ Cubits لأننا قد نحتاج إلى نسخة جديدة
-  // منها في كل مرة نفتح فيها شاشة معينة.
   sl.registerFactory(
     () => MoneySourcesCubit(
       getAllMoneySourcesUseCase: sl(),
-      addMoneySourceUseCase: sl(), // التحديث هنا
+      addMoneySourceUseCase: sl(),
     ),
   );
+
+  // --- سنضيف Transaction Cubit هنا لاحقًا ---
 }
