@@ -20,6 +20,19 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
     required this.addMoneySourceUseCase,
   }) : super(MoneySourcesInitial());
 
+  MoneySource? getSourceById(String id) {
+    final currentState = state;
+    if (currentState is MoneySourcesLoaded) {
+      try {
+        return currentState.sources.firstWhere((source) => source.id == id);
+      } catch (e) {
+        // This will happen if no source is found with the given id.
+        return null;
+      }
+    }
+    return null;
+  }
+
   Future<void> fetchAllMoneySources() async {
     // ... (This function is working correctly, no changes needed)
     emit(MoneySourcesLoading());

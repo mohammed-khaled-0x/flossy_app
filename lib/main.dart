@@ -1,3 +1,5 @@
+// lib/main.dart
+
 // External Packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,7 +7,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 // App-specific
-import 'app_bloc_observer.dart'; // <<<--- 1. استيراد الملف الجديد
+import 'app_bloc_observer.dart';
+import 'domain/usecases/add_money_source.dart';
+import 'domain/usecases/add_transaction_and_update_source.dart'; // <<<--- السطر المضاف
+import 'domain/usecases/get_all_money_sources.dart';
+import 'domain/usecases/get_all_transactions.dart';
 import 'presentation/managers/cubit/dashboard_cubit.dart';
 import 'presentation/managers/cubit/money_sources_cubit.dart';
 import 'presentation/managers/cubit/transactions_cubit.dart';
@@ -17,8 +23,7 @@ Future<void> main() async {
   await initializeDateFormatting('ar_EG', null);
   await initializeDependencies();
 
-  // Activate our custom observer.
-  Bloc.observer = AppBlocObserver(); // <<<--- 2. تفعيل الصندوق الأسود
+  Bloc.observer = AppBlocObserver();
 
   runApp(const FlossyApp());
 }
@@ -28,14 +33,22 @@ class FlossyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ... (باقي الكود كما هو دون أي تغيير)
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => sl<MoneySourcesCubit>()..fetchAllMoneySources(),
+          create: (context) => MoneySourcesCubit(
+            getAllMoneySourcesUseCase: sl<GetAllMoneySources>(),
+            addMoneySourceUseCase: sl<AddMoneySource>(),
+          )..fetchAllMoneySources(),
         ),
         BlocProvider(
-          create: (_) => sl<TransactionsCubit>()..fetchAllTransactions(),
+          create: (context) => TransactionsCubit(
+            getAllTransactionsUseCase: sl<GetAllTransactions>(),
+            addTransactionAndUpdateSourceUseCase:
+                sl<AddTransactionAndUpdateSource>(),
+            getAllMoneySourcesUseCase: sl<GetAllMoneySources>(),
+            moneySourcesCubit: BlocProvider.of<MoneySourcesCubit>(context),
+          )..fetchAllTransactions(),
         ),
       ],
       child: Builder(
@@ -53,7 +66,7 @@ class FlossyApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              supportedLocales: const [Locale('ar', 'EG')],
+              supportedLocales: const [const Locale('ar', 'EG')],
               locale: const Locale('ar', 'EG'),
               theme: ThemeData(
                 useMaterial3: true,

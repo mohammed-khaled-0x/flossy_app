@@ -15,16 +15,12 @@ import 'data/repositories/transaction_repository_impl.dart';
 // Domain Layer Imports
 import 'domain/repositories/money_source_repository.dart';
 import 'domain/repositories/transaction_repository.dart';
+import 'domain/usecases/add_transaction_and_update_source.dart';
 import 'domain/usecases/add_money_source.dart';
 import 'domain/usecases/add_transaction.dart';
 import 'domain/usecases/get_all_money_sources.dart';
 import 'domain/usecases/get_all_transactions.dart';
 import 'domain/usecases/update_money_source.dart';
-
-// Presentation Layer Imports
-import 'presentation/managers/cubit/dashboard_cubit.dart';
-import 'presentation/managers/cubit/money_sources_cubit.dart';
-import 'presentation/managers/cubit/transactions_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -53,7 +49,10 @@ Future<void> initializeDependencies() async {
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(localDataSource: sl()),
+    () => TransactionRepositoryImpl(
+      transactionLocalDataSource: sl(),
+      moneySourceLocalDataSource: sl(),
+    ),
   );
 
   // --- UseCases ---
@@ -62,36 +61,10 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => UpdateMoneySource(sl()));
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
-
+  sl.registerLazySingleton(() => AddTransactionAndUpdateSource(sl()));
   // --- Cubits ---
   // These are core application state managers. We register them as LazySingletons
   // to ensure there is only ONE instance of each throughout the app's lifecycle.
-  sl.registerLazySingleton(
-    // <<<--- CRITICAL CHANGE 1
-    () => MoneySourcesCubit(
-      getAllMoneySourcesUseCase: sl(),
-      addMoneySourceUseCase: sl(),
-    ),
-  );
-  sl.registerLazySingleton(
-    // <<<--- CRITICAL CHANGE 2
-    () => TransactionsCubit(
-      getAllTransactionsUseCase: sl(),
-      addTransactionUseCase: sl(),
-      updateMoneySourceUseCase: sl(),
-      getAllMoneySourcesUseCase: sl(),
-      moneySourcesCubit:
-          sl(), // GetIt will now provide the SINGLE instance of MoneySourcesCubit
-    ),
-  );
-
-  // This cubit is specific to a view, so it can remain a Factory.
-  sl.registerFactory(
-    () => DashboardCubit(
-      moneySourcesCubit: sl(), // Will get the SINGLE instance
-      transactionsCubit: sl(), // Will get the SINGLE instance
-    ),
-  );
 }
 
 /// Seeds the database with default categories on the first run.

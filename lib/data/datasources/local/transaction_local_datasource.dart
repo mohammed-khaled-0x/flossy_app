@@ -1,9 +1,12 @@
 import 'package:isar/isar.dart';
 import '../../models/transaction_model.dart';
 
+typedef IsarWriteCallback = Future<void> Function(Isar isar);
+
 abstract class TransactionLocalDataSource {
   Future<List<TransactionModel>> getAllTransactions();
   Future<void> addTransaction(TransactionModel transaction);
+  Future<void> performAtomicWrite(IsarWriteCallback callback);
 }
 
 class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
@@ -22,5 +25,10 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   Future<List<TransactionModel>> getAllTransactions() async {
     // نرتب المعاملات حسب التاريخ (الأحدث أولاً)
     return await isar.transactionModels.where().sortByDateDesc().findAll();
+  }
+
+  @override
+  Future<void> performAtomicWrite(IsarWriteCallback callback) async {
+    await isar.writeTxn(() => callback(isar));
   }
 }
