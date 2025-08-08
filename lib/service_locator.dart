@@ -22,7 +22,7 @@ import 'domain/usecases/get_all_transactions.dart';
 import 'domain/usecases/update_money_source.dart';
 
 // Presentation Layer Imports
-import 'presentation/managers/cubit/dashboard_cubit.dart'; // <<<--- 1. استيراد جديد
+import 'presentation/managers/cubit/dashboard_cubit.dart';
 import 'presentation/managers/cubit/money_sources_cubit.dart';
 import 'presentation/managers/cubit/transactions_cubit.dart';
 
@@ -38,7 +38,6 @@ Future<void> initializeDependencies() async {
   ], directory: dir.path);
   sl.registerSingleton<Isar>(isar);
 
-  // Seed database with default data if needed
   await _seedDefaultData(isar);
 
   // --- DataSources ---
@@ -61,38 +60,43 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => GetAllMoneySources(sl()));
   sl.registerLazySingleton(() => AddMoneySource(sl()));
   sl.registerLazySingleton(() => UpdateMoneySource(sl()));
-
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
 
   // --- Cubits ---
-  // Cubits that have their own data fetching logic
-  sl.registerFactory(
+  // These are core application state managers. We register them as LazySingletons
+  // to ensure there is only ONE instance of each throughout the app's lifecycle.
+  sl.registerLazySingleton(
+    // <<<--- CRITICAL CHANGE 1
     () => MoneySourcesCubit(
       getAllMoneySourcesUseCase: sl(),
       addMoneySourceUseCase: sl(),
     ),
   );
-  sl.registerFactory(
+  sl.registerLazySingleton(
+    // <<<--- CRITICAL CHANGE 2
     () => TransactionsCubit(
       getAllTransactionsUseCase: sl(),
       addTransactionUseCase: sl(),
       updateMoneySourceUseCase: sl(),
       getAllMoneySourcesUseCase: sl(),
-      moneySourcesCubit: sl(),
+      moneySourcesCubit:
+          sl(), // GetIt will now provide the SINGLE instance of MoneySourcesCubit
     ),
   );
 
-  // Cubits that depend on other cubits (should be registered last)
+  // This cubit is specific to a view, so it can remain a Factory.
   sl.registerFactory(
-    // <<<--- 2. تم إضافة التسجيل الجديد
-    () => DashboardCubit(moneySourcesCubit: sl(), transactionsCubit: sl()),
+    () => DashboardCubit(
+      moneySourcesCubit: sl(), // Will get the SINGLE instance
+      transactionsCubit: sl(), // Will get the SINGLE instance
+    ),
   );
 }
 
 /// Seeds the database with default categories on the first run.
 Future<void> _seedDefaultData(Isar isar) async {
-  // ... (الكود هنا كما هو دون تغيير)
+  // ... (code remains the same)
   final count = await isar.categoryModels.count();
   if (count == 0) {
     final defaultCategories = [

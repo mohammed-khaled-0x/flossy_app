@@ -1,21 +1,45 @@
-import 'package:flutter/foundation.dart'; // نحتاجها لـ @required
+import 'package:equatable/equatable.dart';
 
 /// يمثل أي مصدر للأموال في التطبيق.
-/// هذا هو الكيان النقي الذي لا يعتمد على أي تفاصيل خارجية.
-class MoneySource {
+/// يمتدد من Equatable ليسمح بالمقارنة الذكية بين الكائنات.
+class MoneySource extends Equatable {
   final String id;
   final String name;
   final double balance;
-  final String iconName; // اسم الأيقونة التي سنعرضها (مثلاً: 'cash', 'bank')
+  final String iconName;
   final SourceType type;
 
-  MoneySource({
+  const MoneySource({
     required this.id,
     required this.name,
     required this.balance,
     required this.iconName,
     required this.type,
   });
+
+  /// <<<--- SECTION ADDED ---
+  /// Creates a copy of this MoneySource but with the given fields replaced with the new values.
+  /// A professional pattern for working with immutable state.
+  MoneySource copyWith({
+    String? id,
+    String? name,
+    double? balance,
+    String? iconName,
+    SourceType? type,
+  }) {
+    return MoneySource(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      balance: balance ?? this.balance,
+      iconName: iconName ?? this.iconName,
+      type: type ?? this.type,
+    );
+  }
+
+  /// --- END OF SECTION ---
+
+  @override
+  List<Object?> get props => [id, name, balance, iconName, type];
 }
 
 /// لتحديد أنواع المصادر المتاحة في التطبيق.

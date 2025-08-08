@@ -1,16 +1,17 @@
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 
 /// يمثل أي معاملة مالية (صرف أو دخل) في التطبيق.
-class Transaction {
+/// يمتدد من Equatable ليسمح بالمقارنة الذكية بين الكائنات.
+class Transaction extends Equatable {
   final String id;
   final double amount;
   final TransactionType type;
   final DateTime date;
   final String description;
-  final String sourceId; // ID لمصدر الأموال الذي تمت عليه المعاملة
-  final String? categoryId; // ID لفئة المعاملة (اختياري للدخل)
+  final String sourceId;
+  final String? categoryId;
 
-  Transaction({
+  const Transaction({
     required this.id,
     required this.amount,
     required this.type,
@@ -19,6 +20,18 @@ class Transaction {
     required this.sourceId,
     this.categoryId,
   });
+
+  // نحدد الخصائص التي تعرف "هوية" المعاملة
+  @override
+  List<Object?> get props => [
+    id,
+    amount,
+    type,
+    date,
+    description,
+    sourceId,
+    categoryId,
+  ];
 }
 
 /// لتحديد نوع المعاملة

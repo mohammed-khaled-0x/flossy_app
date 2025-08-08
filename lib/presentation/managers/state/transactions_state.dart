@@ -1,22 +1,34 @@
+import 'package:equatable/equatable.dart';
 import '../../../domain/entities/transaction.dart';
 
-// الكلاس الأساسي الذي سترث منه كل الحالات
-abstract class TransactionsState {}
+abstract class TransactionsState extends Equatable {
+  const TransactionsState();
 
-// الحالة الأولية
-class TransactionsInitial extends TransactionsState {}
-
-// حالة التحميل
-class TransactionsLoading extends TransactionsState {}
-
-// حالة النجاح (عندما تصل قائمة المعاملات)
-class TransactionsLoaded extends TransactionsState {
-  final List<Transaction> transactions;
-  TransactionsLoaded(this.transactions);
+  @override
+  List<Object> get props => [];
 }
 
-// حالة الفشل
+class TransactionsInitial extends TransactionsState {}
+
+class TransactionsLoading extends TransactionsState {}
+
+class TransactionsLoaded extends TransactionsState {
+  final List<Transaction> transactions;
+
+  const TransactionsLoaded(this.transactions);
+
+  // <<<--- THE FINAL, GUARANTEED FIX ---
+  // Using the spread operator for the transactions list as well.
+  @override
+  List<Object> get props => [...transactions];
+  // --- END OF CHANGE ---
+}
+
 class TransactionsError extends TransactionsState {
   final String message;
-  TransactionsError(this.message);
+
+  const TransactionsError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }

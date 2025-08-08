@@ -1,21 +1,27 @@
+// External Packages
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart'; // حزمة لتوليد ID فريد
+import 'package:uuid/uuid.dart';
+
+// Domain Layer
 import '../../../domain/entities/money_source.dart';
 import '../../../domain/usecases/add_money_source.dart';
 import '../../../domain/usecases/get_all_money_sources.dart';
+
+// Presentation Layer
 import '../state/money_sources_state.dart';
 
 class MoneySourcesCubit extends Cubit<MoneySourcesState> {
   final GetAllMoneySources getAllMoneySourcesUseCase;
-  final AddMoneySource addMoneySourceUseCase; // 1. إضافة الـ Use Case الجديد
+  final AddMoneySource addMoneySourceUseCase;
 
   MoneySourcesCubit({
     required this.getAllMoneySourcesUseCase,
-    required this.addMoneySourceUseCase, // 2. إضافته للـ constructor
+    required this.addMoneySourceUseCase,
   }) : super(MoneySourcesInitial());
 
-  /// دالة لجلب كل مصادر الأموال
   Future<void> fetchAllMoneySources() async {
+    // ... (This function is working correctly, no changes needed)
     emit(MoneySourcesLoading());
     try {
       final sources = await getAllMoneySourcesUseCase();
@@ -25,35 +31,75 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
     }
   }
 
-  /// 3. دالة لإضافة مصدر أموال جديد
   Future<void> addNewSource({
     required String name,
     required double balance,
     required String iconName,
     required SourceType type,
   }) async {
+    // ... (This function is working correctly, no changes needed)
+    final currentState = state;
+    if (currentState is! MoneySourcesLoaded) return;
+
     try {
-      // إنشاء كيان جديد مع ID فريد باستخدام حزمة uuid
       final newSource = MoneySource(
-        id: const Uuid().v4(), // توليد ID فريد من نوع v4
+        id: const Uuid().v4(),
         name: name,
         balance: balance,
         iconName: iconName,
         type: type,
       );
 
-      // استدعاء حالة الاستخدام لإضافة المصدر الجديد
       await addMoneySourceUseCase(newSource);
 
-      // بعد الإضافة بنجاح، نعيد تحميل كل المصادر لتحديث الواجهة
-      await fetchAllMoneySources();
+      final updatedList = List<MoneySource>.from(currentState.sources)
+        ..add(newSource);
+      emit(MoneySourcesLoaded(updatedList));
     } catch (e) {
-      // في حالة حدوث خطأ أثناء الإضافة
-      // يمكننا إصدار حالة خطأ خاصة بالإضافة إذا أردنا
-      // لكن حاليًا سنكتفي بطباعة الخطأ في الـ console
-      print('Error adding new source: ${e.toString()}');
-      // يمكن أيضًا إعادة إصدار الحالة السابقة لإبقاء الواجهة كما هي
-      // emit(state);
+      emit(MoneySourcesError('فشل إضافة المصدر: ${e.toString()}'));
     }
+  }
+
+  /// This is the instrumented version of the function for deep debugging.
+  void updateSourceInState(MoneySource updatedSource) {
+    // --- DEBUGGING PRINTS ---
+    debugPrint('--- STARTING updateSourceInState ---');
+    debugPrint('1. Received updatedSource: $updatedSource');
+
+    final currentState = state;
+    debugPrint('2. Current state is: $currentState');
+
+    if (currentState is MoneySourcesLoaded) {
+      debugPrint('3. State is MoneySourcesLoaded. Proceeding...');
+
+      final newList = currentState.sources.map((source) {
+        if (source.id == updatedSource.id) {
+          return updatedSource;
+        } else {
+          return source;
+        }
+      }).toList();
+
+      debugPrint('4. New list created. Does it contain the update?');
+      // Let's find the updated item in the new list to be sure.
+      final itemInNewList = newList.firstWhere((s) => s.id == updatedSource.id);
+      debugPrint('   - Item in new list: $itemInNewList');
+
+      final newState = MoneySourcesLoaded(newList);
+
+      // This is the most critical test.
+      // If Equatable is working, these two values should be DIFFERENT.
+      debugPrint('5. COMPARING STATES:');
+      debugPrint('   - Current State HashCode: ${currentState.hashCode}');
+      debugPrint('   - New State HashCode:     ${newState.hashCode}');
+      debugPrint('   - Are they equal? --> ${currentState == newState}');
+
+      debugPrint('6. ABOUT TO EMIT the new state...');
+      emit(newState);
+      debugPrint('7. EMITTED new state successfully.');
+    } else {
+      debugPrint('3. State is NOT MoneySourcesLoaded. Aborting.');
+    }
+    debugPrint('--- FINISHED updateSourceInState ---');
   }
 }

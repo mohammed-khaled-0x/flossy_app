@@ -6,9 +6,9 @@ import 'package:uuid/uuid.dart';
 import '../../../domain/entities/money_source.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../../domain/usecases/add_transaction.dart';
-import '../../../domain/usecases/get_all_money_sources.dart'; // <<<--- 1. استيراد جديد
+import '../../../domain/usecases/get_all_money_sources.dart';
 import '../../../domain/usecases/get_all_transactions.dart';
-import '../../../domain/usecases/update_money_source.dart'; // <<<--- 2. استيراد جديد
+import '../../../domain/usecases/update_money_source.dart';
 
 // Presentation Layer
 import '../state/transactions_state.dart';
@@ -18,10 +18,8 @@ class TransactionsCubit extends Cubit<TransactionsState> {
   // Use cases this cubit depends on
   final GetAllTransactions getAllTransactionsUseCase;
   final AddTransaction addTransactionUseCase;
-  final UpdateMoneySource
-  updateMoneySourceUseCase; // <<<--- 3. استبدال الـ Repository بالـ UseCase
-  final GetAllMoneySources
-  getAllMoneySourcesUseCase; // <<<--- 4. إضافة UseCase لجلب المصادر
+  final UpdateMoneySource updateMoneySourceUseCase;
+  final GetAllMoneySources getAllMoneySourcesUseCase;
 
   // Other cubits this cubit communicates with
   final MoneySourcesCubit moneySourcesCubit;
@@ -29,8 +27,8 @@ class TransactionsCubit extends Cubit<TransactionsState> {
   TransactionsCubit({
     required this.getAllTransactionsUseCase,
     required this.addTransactionUseCase,
-    required this.updateMoneySourceUseCase, // <<<--- 5. تعديل الـ constructor
-    required this.getAllMoneySourcesUseCase, // <<<--- 6. تعديل الـ constructor
+    required this.updateMoneySourceUseCase,
+    required this.getAllMoneySourcesUseCase,
     required this.moneySourcesCubit,
   }) : super(TransactionsInitial());
 
@@ -51,8 +49,10 @@ class TransactionsCubit extends Cubit<TransactionsState> {
     required String sourceId,
     String? categoryId,
   }) async {
-    // We don't emit a loading state here to provide a smoother user experience.
-    // The UI can show a loading indicator on the button itself.
+    // Ensure we have a loaded state to update from.
+    final currentState = state;
+    if (currentState is! TransactionsLoaded) return;
+
     try {
       // 1. Create the new transaction entity
       final newTransaction = Transaction(
@@ -65,17 +65,12 @@ class TransactionsCubit extends Cubit<TransactionsState> {
         categoryId: categoryId,
       );
 
-      // 2. Get the specific money source that needs to be updated
-      // We now use the dedicated use case for this
+      // --- This part remains the same: calculating and saving the new balance ---
       final sources = await getAllMoneySourcesUseCase();
       final sourceToUpdate = sources.firstWhere((s) => s.id == sourceId);
-
-      // 3. Calculate the new balance
       final newBalance = (type == TransactionType.income)
           ? sourceToUpdate.balance + amount
           : sourceToUpdate.balance - amount;
-
-      // 4. Create the updated money source entity
       final updatedSource = MoneySource(
         id: sourceToUpdate.id,
         name: sourceToUpdate.name,
@@ -84,19 +79,21 @@ class TransactionsCubit extends Cubit<TransactionsState> {
         type: sourceToUpdate.type,
       );
 
-      // 5. Execute both operations: update source and add transaction
-      // This can be wrapped in a transaction at the repository level if needed for atomicity.
+      // 2. Save both the updated source and the new transaction
       await updateMoneySourceUseCase(updatedSource);
       await addTransactionUseCase(newTransaction);
 
-      // 6. Refresh the data in both relevant cubits to update the UI
-      await fetchAllTransactions();
-      await moneySourcesCubit.fetchAllMoneySources();
+      // --- This is the new, efficient way to update the UI ---
+
+      // 3. Directly notify MoneySourcesCubit with the updated source data.
+      moneySourcesCubit.updateSourceInState(updatedSource);
+
+      // 4. Update this cubit's own state instantly.
+      final updatedList = List<Transaction>.from(currentState.transactions)
+        ..add(newTransaction);
+      emit(TransactionsLoaded(updatedList));
     } catch (e) {
-      // It's better to emit an error state so the UI can react, e.g., show a snackbar.
       emit(TransactionsError('حدث خطأ أثناء إضافة المعاملة: ${e.toString()}'));
-      // To recover, we can fetch the latest state again.
-      await fetchAllTransactions();
     }
   }
 }

@@ -8,6 +8,8 @@ import '../../../domain/entities/transaction.dart';
 
 // Presentation Layer
 import '../../managers/cubit/dashboard_cubit.dart';
+import '../../managers/cubit/money_sources_cubit.dart';
+import '../../managers/cubit/transactions_cubit.dart';
 import '../../managers/state/dashboard_state.dart';
 
 class HomePage extends StatelessWidget {
@@ -40,7 +42,10 @@ class HomePage extends StatelessWidget {
             Text('حدث خطأ: ${state.message}'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.read<DashboardCubit>().loadInitialData(),
+              onPressed: () {
+                context.read<MoneySourcesCubit>().fetchAllMoneySources();
+                context.read<TransactionsCubit>().fetchAllTransactions();
+              },
               child: const Text('إعادة المحاولة'),
             ),
           ],
@@ -52,7 +57,8 @@ class HomePage extends StatelessWidget {
       // If data is loaded, we use a CustomScrollView with Slivers.
       return RefreshIndicator(
         onRefresh: () async {
-          context.read<DashboardCubit>().loadInitialData();
+          context.read<MoneySourcesCubit>().fetchAllMoneySources();
+          context.read<TransactionsCubit>().fetchAllTransactions();
         },
         child: CustomScrollView(
           slivers: [
