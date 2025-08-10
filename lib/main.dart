@@ -17,6 +17,7 @@ import 'presentation/managers/cubit/money_sources_cubit.dart';
 import 'presentation/managers/cubit/transactions_cubit.dart';
 import 'presentation/ui/pages/main_page.dart';
 import 'service_locator.dart';
+import 'domain/usecases/perform_internal_transfer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,7 @@ class FlossyApp extends StatelessWidget {
             addTransactionAndUpdateSourceUseCase:
                 sl<AddTransactionAndUpdateSource>(),
             getAllMoneySourcesUseCase: sl<GetAllMoneySources>(),
+            performInternalTransferUseCase: sl<PerformInternalTransfer>(),
             moneySourcesCubit: BlocProvider.of<MoneySourcesCubit>(context),
           )..fetchAllTransactions(),
         ),

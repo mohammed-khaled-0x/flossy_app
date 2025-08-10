@@ -4,7 +4,7 @@ import '../entities/transaction.dart';
 abstract class TransactionRepository {
   Future<List<Transaction>> getAllTransactions();
 
-  Future<Transaction> addTransactionAndUpdateSource(
+  Future<void> addTransactionAndUpdateSource(
     Transaction transaction,
     MoneySource updatedSource,
   );
@@ -14,8 +14,6 @@ abstract class TransactionRepository {
   Future<void> performInternalTransfer({
     required Transaction expenseTransaction,
     required Transaction incomeTransaction,
-    required MoneySource fromSource,
-    required MoneySource toSource,
   });
 
   @deprecated

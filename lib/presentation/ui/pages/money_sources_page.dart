@@ -1,97 +1,113 @@
 // lib/presentation/ui/pages/money_sources_page.dart
 
-// External Packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-// Domain Layer
 import '../../../domain/entities/money_source.dart';
-
-// Presentation Layer
 import '../../managers/cubit/money_sources_cubit.dart';
 import '../../managers/state/money_sources_state.dart';
 import 'add_edit_money_source_page.dart';
+import 'add_internal_transfer_page.dart'; // Import the new page
 
 class MoneySourcesPage extends StatelessWidget {
   const MoneySourcesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('مصادر الأموال'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_card_outlined),
-            tooltip: 'إضافة مصدر جديد',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const AddEditMoneySourcePage(),
+    // We wrap the entire Scaffold in a BlocBuilder to control the AppBar actions
+    return BlocBuilder<MoneySourcesCubit, MoneySourcesState>(
+      builder: (context, state) {
+        // Determine if the transfer button should be visible based on the current state
+        final canTransfer =
+            state is MoneySourcesLoaded && state.sources.length >= 2;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('مصادر الأموال'),
+            actions: [
+              // Conditionally display the transfer button
+              if (canTransfer)
+                IconButton(
+                  icon: const Icon(Icons.swap_horiz_rounded),
+                  tooltip: 'تحويل داخلي',
+                  onPressed: () {
+                    // We can safely cast the state here because `canTransfer` is true
+                    final sources = (state as MoneySourcesLoaded).sources;
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            AddInternalTransferPage(moneySources: sources),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<MoneySourcesCubit, MoneySourcesState>(
-        builder: (context, state) {
-          if (state is MoneySourcesLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is MoneySourcesError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<MoneySourcesCubit>().fetchAllMoneySources();
-                    },
-                    child: const Text('إعادة المحاولة'),
-                  ),
-                ],
+              // The "Add" button is always visible
+              IconButton(
+                icon: const Icon(Icons.add_card_outlined),
+                tooltip: 'إضافة مصدر جديد',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddEditMoneySourcePage(),
+                    ),
+                  );
+                },
               ),
-            );
-          }
-
-          if (state is MoneySourcesLoaded) {
-            // --- THE DEFINITIVE FIX ---
-            // We ALWAYS return a ListView to maintain a consistent widget structure.
-            // The content of the ListView is what changes.
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              // If the list is empty, we build 1 item (the empty state message).
-              // Otherwise, we build as many items as there are sources.
-              itemCount: state.sources.isEmpty ? 1 : state.sources.length,
-              itemBuilder: (context, index) {
-                // If the list is empty, show the empty state widget.
-                if (state.sources.isEmpty) {
-                  return _buildEmptyState(context);
-                }
-                // Otherwise, build the regular money source card.
-                final source = state.sources[index];
-                return _MoneySourceCard(source: source);
-              },
-            );
-          }
-
-          // Fallback state
-          return const Center(child: Text('جاري تهيئة الصفحة...'));
-        },
-      ),
+            ],
+          ),
+          // The body of the scaffold doesn't need its own BlocBuilder anymore
+          // as it's already inside one.
+          body: _buildBodyForState(context, state),
+        );
+      },
     );
   }
 
-  // Helper method to build the empty state view to keep the builder clean.
+  // A helper method to build the body content based on the state
+  Widget _buildBodyForState(BuildContext context, MoneySourcesState state) {
+    if (state is MoneySourcesLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state is MoneySourcesError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(state.message),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                context.read<MoneySourcesCubit>().fetchAllMoneySources();
+              },
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state is MoneySourcesLoaded) {
+      return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: state.sources.isEmpty ? 1 : state.sources.length,
+        itemBuilder: (context, index) {
+          if (state.sources.isEmpty) {
+            return _buildEmptyState(context);
+          }
+          final source = state.sources[index];
+          return _MoneySourceCard(source: source);
+        },
+      );
+    }
+
+    // Fallback for the initial state
+    return const Center(child: Text('جاري تهيئة الصفحة...'));
+  }
+
   Widget _buildEmptyState(BuildContext context) {
-    // We get the screen height to ensure the message is roughly centered.
     final screenHeight = MediaQuery.of(context).size.height;
     return Container(
-      height: screenHeight * 0.6, // Adjust multiplier as needed
+      height: screenHeight * 0.6,
       alignment: Alignment.center,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -119,7 +135,6 @@ class MoneySourcesPage extends StatelessWidget {
   }
 }
 
-// _MoneySourceCard and _getIconForSourceType remain exactly the same.
 class _MoneySourceCard extends StatelessWidget {
   const _MoneySourceCard({required this.source});
 

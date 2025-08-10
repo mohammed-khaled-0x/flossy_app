@@ -9,7 +9,7 @@ class AddTransactionAndUpdateSource {
 
   /// This use case now returns the saved [Transaction] object,
   /// complete with the final ID assigned by the database.
-  Future<Transaction> call(Transaction transaction, MoneySource updatedSource) {
+  Future<void> call(Transaction transaction, MoneySource updatedSource) {
     return repository.addTransactionAndUpdateSource(transaction, updatedSource);
   }
 }

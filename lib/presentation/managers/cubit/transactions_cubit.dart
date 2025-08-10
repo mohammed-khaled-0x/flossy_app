@@ -7,6 +7,7 @@ import '../../../domain/entities/transaction.dart';
 import '../../../domain/usecases/add_transaction_and_update_source.dart';
 import '../../../domain/usecases/get_all_money_sources.dart';
 import '../../../domain/usecases/get_all_transactions.dart';
+import '../../../domain/usecases/perform_internal_transfer.dart';
 
 // Presentation Layer
 import '../state/transactions_state.dart';
@@ -17,7 +18,7 @@ class TransactionsCubit extends Cubit<TransactionsState> {
   final GetAllTransactions getAllTransactionsUseCase;
   final AddTransactionAndUpdateSource addTransactionAndUpdateSourceUseCase;
   final GetAllMoneySources getAllMoneySourcesUseCase;
-
+  final PerformInternalTransfer performInternalTransferUseCase;
   // Other cubits this cubit communicates with
   final MoneySourcesCubit moneySourcesCubit;
 
@@ -25,6 +26,7 @@ class TransactionsCubit extends Cubit<TransactionsState> {
     required this.getAllTransactionsUseCase,
     required this.addTransactionAndUpdateSourceUseCase,
     required this.getAllMoneySourcesUseCase,
+    required this.performInternalTransferUseCase,
     required this.moneySourcesCubit,
   }) : super(TransactionsInitial());
 
@@ -85,7 +87,7 @@ class TransactionsCubit extends Cubit<TransactionsState> {
 
       // 4. Call the single, atomic use case to save everything.
       // This use case should return the final transaction object with the correct ID.
-      final savedTransaction = await addTransactionAndUpdateSourceUseCase(
+      await addTransactionAndUpdateSourceUseCase(
         newTransaction,
         updatedSource,
       );
@@ -95,11 +97,41 @@ class TransactionsCubit extends Cubit<TransactionsState> {
 
       final updatedList = List<Transaction>.from(currentState.transactions)
         // Use the object returned from the use case, which has the final ID from the DB.
-        ..insert(0, savedTransaction);
+        ..insert(0, newTransaction);
       emit(TransactionsLoaded(updatedList));
     } catch (e) {
       emit(TransactionsError('حدث خطأ أثناء إضافة المعاملة: ${e.toString()}'));
       await fetchAllTransactions();
+    }
+  }
+
+  Future<void> performTransfer({
+    required double amount,
+    required int fromSourceId,
+    required int toSourceId,
+  }) async {
+    // It's crucial to get the most up-to-date source objects.
+    final fromSource = moneySourcesCubit.getSourceById(fromSourceId);
+    final toSource = moneySourcesCubit.getSourceById(toSourceId);
+
+    if (fromSource == null || toSource == null) {
+      emit(TransactionsError('لم يتم العثور على أحد مصادر التحويل.'));
+      return;
+    }
+
+    try {
+      await performInternalTransferUseCase(
+        amount: amount,
+        fromSource: fromSource,
+        toSource: toSource,
+      );
+
+      // After the use case successfully updates the database, we must re-fetch all data
+      // to show the new balances and the two new transaction records.
+      await moneySourcesCubit.fetchAllMoneySources();
+      await fetchAllTransactions();
+    } catch (e) {
+      emit(TransactionsError('فشل إتمام عملية التحويل: ${e.toString()}'));
     }
   }
 }

@@ -54,11 +54,7 @@ Future<void> initializeDependencies() async {
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(
-      transactionLocalDataSource: sl(),
-      // Add the missing dependency
-      moneySourceLocalDataSource: sl(),
-    ),
+    () => TransactionRepositoryImpl(transactionLocalDataSource: sl()),
   );
 
   // --- UseCases ---
