@@ -8,6 +8,7 @@ import 'package:flossy/presentation/ui/pages/add_transaction_page.dart';
 import 'home_page.dart';
 import 'money_sources_page.dart';
 import 'transactions_history_page.dart';
+import 'package:flossy/presentation/ui/pages/recurring_transactions/recurring_transactions_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -119,6 +120,30 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Settings - Coming Soon'));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('الإعدادات والإدارة'),
+        centerTitle: true,
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.repeat_rounded),
+            title: const Text('الالتزامات الدورية'),
+            subtitle: const Text('إدارة الفواتير والاشتراكات الثابتة'),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const RecurringTransactionsPage(),
+                ),
+              );
+            },
+          ),
+          const Divider(),
+          // Add other settings items here in the future
+        ],
+      ),
+    );
   }
 }
