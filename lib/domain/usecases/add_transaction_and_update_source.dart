@@ -1,5 +1,3 @@
-// lib/domain/usecases/add_transaction_and_update_source.dart
-
 import '../entities/money_source.dart';
 import '../entities/transaction.dart';
 import '../repositories/transaction_repository.dart';
@@ -9,7 +7,9 @@ class AddTransactionAndUpdateSource {
 
   AddTransactionAndUpdateSource(this.repository);
 
-  Future<void> call(Transaction transaction, MoneySource updatedSource) {
+  /// This use case now returns the saved [Transaction] object,
+  /// complete with the final ID assigned by the database.
+  Future<Transaction> call(Transaction transaction, MoneySource updatedSource) {
     return repository.addTransactionAndUpdateSource(transaction, updatedSource);
   }
 }

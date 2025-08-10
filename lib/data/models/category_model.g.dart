@@ -27,13 +27,8 @@ const CategoryModelSchema = CollectionSchema(
       name: r'iconName',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
-      id: 2,
-      name: r'id',
-      type: IsarType.string,
-    ),
     r'name': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'name',
       type: IsarType.string,
     )
@@ -42,18 +37,18 @@ const CategoryModelSchema = CollectionSchema(
   serialize: _categoryModelSerialize,
   deserialize: _categoryModelDeserialize,
   deserializeProp: _categoryModelDeserializeProp,
-  idName: r'isarId',
+  idName: r'id',
   indexes: {
-    r'id': IndexSchema(
-      id: -3268401673993471357,
-      name: r'id',
+    r'name': IndexSchema(
+      id: 879695947855722453,
+      name: r'name',
       unique: true,
-      replace: true,
+      replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'id',
+          name: r'name',
           type: IndexType.hash,
-          caseSensitive: true,
+          caseSensitive: false,
         )
       ],
     )
@@ -73,7 +68,6 @@ int _categoryModelEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.iconName.length * 3;
-  bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.name.length * 3;
   return bytesCount;
 }
@@ -86,8 +80,7 @@ void _categoryModelSerialize(
 ) {
   writer.writeDouble(offsets[0], object.budget);
   writer.writeString(offsets[1], object.iconName);
-  writer.writeString(offsets[2], object.id);
-  writer.writeString(offsets[3], object.name);
+  writer.writeString(offsets[2], object.name);
 }
 
 CategoryModel _categoryModelDeserialize(
@@ -99,9 +92,8 @@ CategoryModel _categoryModelDeserialize(
   final object = CategoryModel();
   object.budget = reader.readDoubleOrNull(offsets[0]);
   object.iconName = reader.readString(offsets[1]);
-  object.id = reader.readString(offsets[2]);
-  object.isarId = id;
-  object.name = reader.readString(offsets[3]);
+  object.id = id;
+  object.name = reader.readString(offsets[2]);
   return object;
 }
 
@@ -118,15 +110,13 @@ P _categoryModelDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
 Id _categoryModelGetId(CategoryModel object) {
-  return object.isarId;
+  return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _categoryModelGetLinks(CategoryModel object) {
@@ -135,67 +125,67 @@ List<IsarLinkBase<dynamic>> _categoryModelGetLinks(CategoryModel object) {
 
 void _categoryModelAttach(
     IsarCollection<dynamic> col, Id id, CategoryModel object) {
-  object.isarId = id;
+  object.id = id;
 }
 
 extension CategoryModelByIndex on IsarCollection<CategoryModel> {
-  Future<CategoryModel?> getById(String id) {
-    return getByIndex(r'id', [id]);
+  Future<CategoryModel?> getByName(String name) {
+    return getByIndex(r'name', [name]);
   }
 
-  CategoryModel? getByIdSync(String id) {
-    return getByIndexSync(r'id', [id]);
+  CategoryModel? getByNameSync(String name) {
+    return getByIndexSync(r'name', [name]);
   }
 
-  Future<bool> deleteById(String id) {
-    return deleteByIndex(r'id', [id]);
+  Future<bool> deleteByName(String name) {
+    return deleteByIndex(r'name', [name]);
   }
 
-  bool deleteByIdSync(String id) {
-    return deleteByIndexSync(r'id', [id]);
+  bool deleteByNameSync(String name) {
+    return deleteByIndexSync(r'name', [name]);
   }
 
-  Future<List<CategoryModel?>> getAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndex(r'id', values);
+  Future<List<CategoryModel?>> getAllByName(List<String> nameValues) {
+    final values = nameValues.map((e) => [e]).toList();
+    return getAllByIndex(r'name', values);
   }
 
-  List<CategoryModel?> getAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'id', values);
+  List<CategoryModel?> getAllByNameSync(List<String> nameValues) {
+    final values = nameValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'name', values);
   }
 
-  Future<int> deleteAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'id', values);
+  Future<int> deleteAllByName(List<String> nameValues) {
+    final values = nameValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'name', values);
   }
 
-  int deleteAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'id', values);
+  int deleteAllByNameSync(List<String> nameValues) {
+    final values = nameValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'name', values);
   }
 
-  Future<Id> putById(CategoryModel object) {
-    return putByIndex(r'id', object);
+  Future<Id> putByName(CategoryModel object) {
+    return putByIndex(r'name', object);
   }
 
-  Id putByIdSync(CategoryModel object, {bool saveLinks = true}) {
-    return putByIndexSync(r'id', object, saveLinks: saveLinks);
+  Id putByNameSync(CategoryModel object, {bool saveLinks = true}) {
+    return putByIndexSync(r'name', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllById(List<CategoryModel> objects) {
-    return putAllByIndex(r'id', objects);
+  Future<List<Id>> putAllByName(List<CategoryModel> objects) {
+    return putAllByIndex(r'name', objects);
   }
 
-  List<Id> putAllByIdSync(List<CategoryModel> objects,
+  List<Id> putAllByNameSync(List<CategoryModel> objects,
       {bool saveLinks = true}) {
-    return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(r'name', objects, saveLinks: saveLinks);
   }
 }
 
 extension CategoryModelQueryWhereSort
     on QueryBuilder<CategoryModel, CategoryModel, QWhere> {
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhere> anyIsarId() {
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -204,113 +194,114 @@ extension CategoryModelQueryWhereSort
 
 extension CategoryModelQueryWhere
     on QueryBuilder<CategoryModel, CategoryModel, QWhereClause> {
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> isarIdEqualTo(
-      Id isarId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> isarIdLessThan(
-      Id isarId,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> idEqualTo(
-      String id) {
+      Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'id',
-        value: [id],
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
       ));
     });
   }
 
   QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> idNotEqualTo(
-      String id) {
+      Id id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> idGreaterThan(
+      Id id,
+      {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
+    });
+  }
+
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> idLessThan(
+      Id id,
+      {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
+    });
+  }
+
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> nameEqualTo(
+      String name) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name',
+        value: [name],
+      ));
+    });
+  }
+
+  QueryBuilder<CategoryModel, CategoryModel, QAfterWhereClause> nameNotEqualTo(
+      String name) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
+              indexName: r'name',
               lower: [],
-              upper: [id],
+              upper: [name],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
+              indexName: r'name',
+              lower: [name],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
+              indexName: r'name',
+              lower: [name],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
+              indexName: r'name',
               lower: [],
-              upper: [id],
+              upper: [name],
               includeUpper: false,
             ));
       }
@@ -541,179 +532,43 @@ extension CategoryModelQueryFilter
   }
 
   QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
       idGreaterThan(
-    String value, {
+    Id value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idLessThan(
-    String value, {
+    Id value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'id',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition> idMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      idIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      idIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterFilterCondition>
-      isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -721,7 +576,7 @@ extension CategoryModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
+        property: r'id',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -899,18 +754,6 @@ extension CategoryModelQuerySortBy
     });
   }
 
-  QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> sortById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> sortByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
   QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -963,18 +806,6 @@ extension CategoryModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> thenByIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> thenByIsarIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
-    });
-  }
-
   QueryBuilder<CategoryModel, CategoryModel, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1003,13 +834,6 @@ extension CategoryModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<CategoryModel, CategoryModel, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<CategoryModel, CategoryModel, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1020,9 +844,9 @@ extension CategoryModelQueryWhereDistinct
 
 extension CategoryModelQueryProperty
     on QueryBuilder<CategoryModel, CategoryModel, QQueryProperty> {
-  QueryBuilder<CategoryModel, int, QQueryOperations> isarIdProperty() {
+  QueryBuilder<CategoryModel, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addPropertyName(r'id');
     });
   }
 
@@ -1035,12 +859,6 @@ extension CategoryModelQueryProperty
   QueryBuilder<CategoryModel, String, QQueryOperations> iconNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'iconName');
-    });
-  }
-
-  QueryBuilder<CategoryModel, String, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
     });
   }
 

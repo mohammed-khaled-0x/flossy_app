@@ -8,7 +8,7 @@ class AddMoneySource {
   AddMoneySource(this.repository);
 
   /// الدالة تستقبل الكيان الذي نريد إضافته.
-  Future<void> call(MoneySource source) async {
-    return await repository.addMoneySource(source);
+  Future<MoneySource> call(MoneySource source) {
+    return repository.addMoneySource(source);
   }
 }

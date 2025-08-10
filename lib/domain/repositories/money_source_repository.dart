@@ -8,7 +8,7 @@ abstract class MoneySourceRepository {
   Future<List<MoneySource>> getAllMoneySources();
 
   /// يضيف مصدر أموال جديد.
-  Future<void> addMoneySource(MoneySource source);
+  Future<MoneySource> addMoneySource(MoneySource source);
 
   /// يحدث بيانات مصدر أموال موجود.
   Future<void> updateMoneySource(MoneySource source);

@@ -1,14 +1,57 @@
+# name: flossy
+# description: "A new Flutter project."
+
+# publish_to: 'none'
+
+
+# version: 1.0.0+1
+
+# environment:
+#   sdk: ^3.8.1
+
+
+# dependencies:
+#   flutter:
+#     sdk: flutter
+
+#   flutter_localizations:
+#     sdk: flutter
+
+#   cupertino_icons: ^1.0.8
+#   isar: ^3.1.0+1
+#   isar_flutter_libs: ^3.1.0+1
+#   path_provider: ^2.1.5
+#   get_it: ^8.2.0
+#   flutter_bloc: ^9.1.1
+#   uuid: ^4.5.1
+#   intl: ^0.20.2
+#   equatable: ^2.0.7
+
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+
+
+#   flutter_lints: ^5.0.0
+#   isar_generator: ^3.1.0+1
+#   build_runner: ^2.4.13
+
+
+
+# flutter:
+
+
+#   uses-material-design: true
 name: flossy
 description: "A new Flutter project."
 
 publish_to: 'none'
 
-
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.1
-
+  # Using a slightly wider range to allow for newer package versions
+  sdk: '>=3.3.0 <4.0.0' 
 
 dependencies:
   flutter:
@@ -18,27 +61,24 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  # Allow pub get to find the latest compatible versions
+  isar: 
+  isar_flutter_libs: 
   path_provider: ^2.1.5
   get_it: ^8.2.0
   flutter_bloc: ^9.1.1
   uuid: ^4.5.1
-  intl: ^0.20.2
+  intl: ^0.20.2 # Usually stable, no need to change
   equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
-  flutter_lints: ^5.0.0
-  isar_generator: ^3.1.0+1
-  build_runner: ^2.4.13
-
-
+  # Let's update these to the latest to fix the generator issues
+  flutter_lints: 
+  isar_generator: 
+  build_runner: 
 
 flutter:
-
-
   uses-material-design: true

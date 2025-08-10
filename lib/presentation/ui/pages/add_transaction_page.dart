@@ -24,31 +24,52 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final _amountController = TextEditingController();
 
   TransactionType _selectedTxType = TransactionType.expense;
-  // --- CHANGE 1: The variable is now an integer ---
   int? _selectedSourceId;
-  String? _selectedCategoryId;
+  int? _selectedCategoryId;
   List<CategoryModel> _categories = [];
 
   @override
   void initState() {
     super.initState();
-    // Set the initial value for the money source if the list is not empty
-    if (widget.moneySources.isNotEmpty) {
+    // We remove the logic from here. It's safer to handle it in the build method
+    // or didChangeDependencies to react to changes in the widget's properties.
+    _loadCategories();
+  }
+
+  // --- NEW METHOD ---
+  // This method is called whenever the dependencies of this State object change.
+  // It's a safer place to initialize state that depends on widget properties.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // If no source is selected yet AND the list of sources is not empty
+    if (_selectedSourceId == null && widget.moneySources.isNotEmpty) {
+      // Set the initial value to the first source in the list
       _selectedSourceId = widget.moneySources.first.id;
     }
-    _loadCategories();
+    // --- SAFETY CHECK ---
+    // If a source ID IS selected, but it's no longer in the list of available sources
+    // (e.g., it was deleted), we reset it to the first available source to avoid crashing.
+    else if (_selectedSourceId != null &&
+        !widget.moneySources.any((source) => source.id == _selectedSourceId)) {
+      _selectedSourceId = widget.moneySources.isNotEmpty
+          ? widget.moneySources.first.id
+          : null;
+    }
   }
 
   Future<void> _loadCategories() async {
     final isar = sl<Isar>();
     final cats = await isar.categoryModels.where().findAll();
-    setState(() {
-      _categories = cats;
-      // Set the initial value for the category if the list is not empty
-      if (_categories.isNotEmpty) {
-        _selectedCategoryId = _categories.first.id;
-      }
-    });
+    // Ensure the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        _categories = cats;
+        if (_categories.isNotEmpty && _selectedCategoryId == null) {
+          _selectedCategoryId = _categories.first.id;
+        }
+      });
+    }
   }
 
   @override
@@ -59,8 +80,16 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   void _submitForm() {
+    // Add a check to ensure a source is selected before submitting
+    if (_selectedSourceId == null) {
+      // Optionally, show a snackbar to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('الرجاء إضافة مصدر أموال أولاً.')),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
-      // --- CHANGE 2: No changes here, as the variable is already the correct type ---
       context.read<TransactionsCubit>().addNewTransaction(
         amount: double.parse(_amountController.text),
         type: _selectedTxType,
@@ -76,6 +105,16 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
   @override
   Widget build(BuildContext context) {
+    // If there are no money sources, show a message instead of the form.
+    if (widget.moneySources.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('إضافة حركة جديدة')),
+        body: const Center(
+          child: Text('يجب إضافة مصدر أموال واحد على الأقل قبل تسجيل أي حركة.'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('إضافة حركة جديدة')),
       body: Padding(
@@ -84,6 +123,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           key: _formKey,
           child: ListView(
             children: [
+              // ... Rest of the form is the same ...
               SegmentedButton<TransactionType>(
                 segments: const [
                   ButtonSegment(
@@ -105,7 +145,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 },
               ),
               const SizedBox(height: 24),
-
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'الوصف'),
@@ -125,13 +164,10 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // --- CHANGE 3: The Dropdown now works with integers ---
               DropdownButtonFormField<int>(
                 value: _selectedSourceId,
                 items: widget.moneySources.map((source) {
                   return DropdownMenuItem<int>(
-                    // Explicitly define the type here
                     value: source.id,
                     child: Text(source.name),
                   );
@@ -141,12 +177,11 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 validator: (val) => val == null ? 'يجب اختيار مصدر' : null,
               ),
               const SizedBox(height: 16),
-
               if (_selectedTxType == TransactionType.expense)
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<int>(
                   value: _selectedCategoryId,
                   items: _categories.map((cat) {
-                    return DropdownMenuItem(
+                    return DropdownMenuItem<int>(
                       value: cat.id,
                       child: Text(cat.name),
                     );
@@ -155,7 +190,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                   decoration: const InputDecoration(labelText: 'تحت فئة'),
                   validator: (val) => val == null ? 'يجب اختيار فئة' : null,
                 ),
-
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitForm,

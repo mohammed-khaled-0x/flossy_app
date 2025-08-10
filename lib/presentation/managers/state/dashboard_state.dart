@@ -1,8 +1,14 @@
+import 'package:equatable/equatable.dart';
 import '../../../domain/entities/money_source.dart';
 import '../../../domain/entities/transaction.dart';
 
 /// الكلاس الأساسي الذي سترث منه كل حالات شاشة لوحة التحكم.
-abstract class DashboardState {}
+abstract class DashboardState extends Equatable {
+  const DashboardState();
+
+  @override
+  List<Object> get props => [];
+}
 
 /// الحالة الأولية، عند بدء تشغيل الشاشة لأول مرة.
 class DashboardInitial extends DashboardState {}
@@ -22,15 +28,20 @@ class DashboardLoaded extends DashboardState {
   /// قائمة بكل مصادر الأموال (قد نحتاجها لعرض شيء ما في المستقبل).
   final List<MoneySource> sources;
 
-  DashboardLoaded({
+  const DashboardLoaded({
     required this.totalBalance,
     required this.recentTransactions,
     required this.sources,
   });
+
+  @override
+  List<Object> get props => [totalBalance, recentTransactions, sources];
 }
 
 /// حالة الفشل، عند حدوث خطأ أثناء تحميل البيانات.
 class DashboardError extends DashboardState {
   final String message;
-  DashboardError(this.message);
+  const DashboardError(this.message);
+  @override
+  List<Object> get props => [message];
 }

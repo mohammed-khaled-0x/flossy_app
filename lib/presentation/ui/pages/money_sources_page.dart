@@ -1,3 +1,5 @@
+// lib/presentation/ui/pages/money_sources_page.dart
+
 // External Packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +21,6 @@ class MoneySourcesPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('مصادر الأموال'),
         actions: [
-          // Button to add a new money source
           IconButton(
             icon: const Icon(Icons.add_card_outlined),
             tooltip: 'إضافة مصدر جديد',
@@ -58,37 +59,20 @@ class MoneySourcesPage extends StatelessWidget {
           }
 
           if (state is MoneySourcesLoaded) {
-            if (state.sources.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'لم تقم بإضافة أي مصادر للأموال بعد.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('ابدأ بإضافة مصدر جديد'),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const AddEditMoneySourcePage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            }
-
+            // --- THE DEFINITIVE FIX ---
+            // We ALWAYS return a ListView to maintain a consistent widget structure.
+            // The content of the ListView is what changes.
             return ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              itemCount: state.sources.length,
+              padding: const EdgeInsets.all(16.0),
+              // If the list is empty, we build 1 item (the empty state message).
+              // Otherwise, we build as many items as there are sources.
+              itemCount: state.sources.isEmpty ? 1 : state.sources.length,
               itemBuilder: (context, index) {
+                // If the list is empty, show the empty state widget.
+                if (state.sources.isEmpty) {
+                  return _buildEmptyState(context);
+                }
+                // Otherwise, build the regular money source card.
                 final source = state.sources[index];
                 return _MoneySourceCard(source: source);
               },
@@ -101,9 +85,41 @@ class MoneySourcesPage extends StatelessWidget {
       ),
     );
   }
+
+  // Helper method to build the empty state view to keep the builder clean.
+  Widget _buildEmptyState(BuildContext context) {
+    // We get the screen height to ensure the message is roughly centered.
+    final screenHeight = MediaQuery.of(context).size.height;
+    return Container(
+      height: screenHeight * 0.6, // Adjust multiplier as needed
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'لم تقم بإضافة أي مصادر للأموال بعد.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.add),
+            label: const Text('ابدأ بإضافة مصدر جديد'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AddEditMoneySourcePage(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// A dedicated widget for a single money source card.
+// _MoneySourceCard and _getIconForSourceType remain exactly the same.
 class _MoneySourceCard extends StatelessWidget {
   const _MoneySourceCard({required this.source});
 
@@ -123,7 +139,7 @@ class _MoneySourceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: Icon(
           _getIconForSourceType(source.type),

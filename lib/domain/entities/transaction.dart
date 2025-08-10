@@ -1,15 +1,22 @@
 import 'package:equatable/equatable.dart';
 
-/// يمثل أي معاملة مالية (صرف أو دخل) في التطبيق.
-/// يمتدد من Equatable ليسمح بالمقارنة الذكية بين الكائنات.
+/// Represents a financial transaction (expense or income) in the app.
+/// Extends Equatable to allow for value-based equality checks.
 class Transaction extends Equatable {
-  final String id;
+  /// The unique ID of the transaction. Now an integer to match the database.
+  final int id;
+
   final double amount;
   final TransactionType type;
   final DateTime date;
   final String description;
+
+  /// The ID of the money source this transaction belongs to.
   final int sourceId;
-  final String? categoryId;
+
+  /// The ID of the category this transaction belongs to.
+  /// Now an integer to match the Category model's future ID.
+  final int? categoryId;
 
   const Transaction({
     required this.id,
@@ -21,7 +28,8 @@ class Transaction extends Equatable {
     this.categoryId,
   });
 
-  // نحدد الخصائص التي تعرف "هوية" المعاملة
+  /// The properties that define the identity of the transaction.
+  /// Used by Equatable to compare instances.
   @override
   List<Object?> get props => [
     id,
@@ -34,7 +42,7 @@ class Transaction extends Equatable {
   ];
 }
 
-/// لتحديد نوع المعاملة
+/// Defines the type of the transaction.
 enum TransactionType {
   expense, // مصروف
   income, // دخل

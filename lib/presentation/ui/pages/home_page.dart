@@ -1,3 +1,5 @@
+// lib/presentation/ui/pages/home_page.dart
+
 // External Packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +20,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // We removed the AppBar from here. It will be a SliverAppBar inside the body.
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
           return _buildBodyForState(context, state);
@@ -27,7 +28,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Helper method to build the body based on the current state.
   Widget _buildBodyForState(BuildContext context, DashboardState state) {
     if (state is DashboardLoading || state is DashboardInitial) {
       return const Center(child: CircularProgressIndicator());
@@ -35,7 +35,6 @@ class HomePage extends StatelessWidget {
 
     if (state is DashboardError) {
       return Center(
-        // ... (Error handling UI remains the same)
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -54,7 +53,6 @@ class HomePage extends StatelessWidget {
     }
 
     if (state is DashboardLoaded) {
-      // If data is loaded, we use a CustomScrollView with Slivers.
       return RefreshIndicator(
         onRefresh: () async {
           context.read<MoneySourcesCubit>().fetchAllMoneySources();
@@ -62,28 +60,19 @@ class HomePage extends StatelessWidget {
         },
         child: CustomScrollView(
           slivers: [
-            // SliverAppBar acts like a normal AppBar but can scroll.
             const SliverAppBar(
               title: Text('الخلاصة'),
               backgroundColor: Colors.transparent,
               elevation: 0,
-              // `pinned: true` would make the app bar stick to the top.
-              // `floating: true` makes it appear as soon as you scroll up.
               floating: true,
             ),
-
-            // SliverToBoxAdapter allows us to use regular widgets inside a CustomScrollView.
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: _TotalBalanceCard(totalBalance: state.totalBalance),
               ),
             ),
-
-            // A sliver for adding vertical space.
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-            // This is the header for the transactions list.
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -93,54 +82,49 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-
             const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-            // Now, we build the list of transactions using SliverList.
-            _buildRecentTransactionsSliver(context, state.recentTransactions),
+            // --- THE DEFINITIVE FIX ---
+            // We ALWAYS return a SliverList to maintain a consistent widget structure.
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    // If the list is empty, build the empty state message.
+                    if (state.recentTransactions.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 48.0),
+                          child: Text(
+                            'لا توجد حركات مسجلة بعد.',
+                            style:
+                                TextStyle(color: Colors.white54, fontSize: 16),
+                          ),
+                        ),
+                      );
+                    }
+                    // Otherwise, build the regular transaction tile.
+                    final tx = state.recentTransactions[index];
+                    return _TransactionTile(transaction: tx);
+                  },
+                  // If empty, build 1 item (the message). Otherwise, build the list.
+                  childCount: state.recentTransactions.isEmpty
+                      ? 1
+                      : state.recentTransactions.length,
+                ),
+              ),
+            ),
           ],
         ),
       );
     }
 
-    // Fallback for any other unhandled state
     return const Center(child: Text('حالة غير معروفة'));
-  }
-
-  // New helper method to build the transaction list as a Sliver.
-  Widget _buildRecentTransactionsSliver(
-    BuildContext context,
-    List<Transaction> transactions,
-  ) {
-    if (transactions.isEmpty) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Text(
-              'لا توجد حركات مسجلة بعد.',
-              style: TextStyle(color: Colors.white54, fontSize: 16),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // SliverList is more efficient than a Column for building lists inside a CustomScrollView.
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final tx = transactions[index];
-          return _TransactionTile(transaction: tx);
-        }, childCount: transactions.length),
-      ),
-    );
   }
 }
 
-// _TotalBalanceCard and _TransactionTile widgets remain exactly the same.
-// ... (The code for _TotalBalanceCard and _TransactionTile goes here without any changes)
+// _TotalBalanceCard and _TransactionTile widgets remain unchanged.
 class _TotalBalanceCard extends StatelessWidget {
   final double totalBalance;
   const _TotalBalanceCard({required this.totalBalance});
@@ -171,9 +155,9 @@ class _TotalBalanceCard extends StatelessWidget {
             Text(
               currencyFormat.format(totalBalance),
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
             ),
           ],
         ),
@@ -189,15 +173,12 @@ class _TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome = transaction.type == TransactionType.income;
-    final amountColor = isIncome
-        ? Colors.greenAccent.shade400
-        : Colors.redAccent.shade400;
+    final amountColor =
+        isIncome ? Colors.greenAccent.shade400 : Colors.redAccent.shade400;
     final currencyFormat = NumberFormat.currency(
       locale: 'ar_EG',
       symbol: 'ج.م',
     );
-
-    // TODO: Fetch category and source details to display names and icons.
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),

@@ -9,11 +9,13 @@ class MoneySourceRepositoryImpl implements MoneySourceRepository {
   MoneySourceRepositoryImpl({required this.localDataSource});
 
   @override
-  Future<void> addMoneySource(MoneySource source) async {
+  Future<MoneySource> addMoneySource(MoneySource source) async {
     // 1. نحول الكيان (Entity) النظيف إلى نموذج (Model) جاهز للتخزين
     final sourceModel = MoneySourceModel.fromEntity(source);
     // 2. نطلب من مصدر البيانات المحلي إضافة النموذج
-    await localDataSource.addMoneySource(sourceModel);
+    final savedModel = await localDataSource.addMoneySource(sourceModel);
+    // 3. Convert the saved model back to an entity and return it.
+    return savedModel.toEntity();
   }
 
   @override

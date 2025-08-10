@@ -66,7 +66,7 @@ class FlossyApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              supportedLocales: const [const Locale('ar', 'EG')],
+              supportedLocales: const [Locale('ar', 'EG')],
               locale: const Locale('ar', 'EG'),
               theme: ThemeData(
                 useMaterial3: true,

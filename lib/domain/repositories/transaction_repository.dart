@@ -1,25 +1,23 @@
-import '../entities/transaction.dart';
 import '../entities/money_source.dart';
+import '../entities/transaction.dart';
 
-/// "العقد" الذي يحدد العمليات المطلوبة على المعاملات.
 abstract class TransactionRepository {
-  /// يجلب كل المعاملات المخزنة.
   Future<List<Transaction>> getAllTransactions();
 
-  /// يضيف معاملة جديدة.
-  @deprecated
-  Future<void> addTransaction(Transaction transaction);
-  Future<void> addTransactionAndUpdateSource(
+  Future<Transaction> addTransactionAndUpdateSource(
     Transaction transaction,
     MoneySource updatedSource,
   );
 
+  /// Performs an internal transfer.
+  /// Now it correctly accepts the source and destination MoneySource objects.
   Future<void> performInternalTransfer({
     required Transaction expenseTransaction,
     required Transaction incomeTransaction,
+    required MoneySource fromSource,
+    required MoneySource toSource,
   });
-  // ملاحظة: حاليًا لا نحتاج إلى تحديث أو حذف معاملة في الـ MVP
-  // سنضيف هذه الدوال لاحقًا عند الحاجة إليها.
-  // Future<void> updateTransaction(Transaction transaction);
-  // Future<void> deleteTransaction(String id);
+
+  @deprecated
+  Future<void> addTransaction(Transaction transaction);
 }

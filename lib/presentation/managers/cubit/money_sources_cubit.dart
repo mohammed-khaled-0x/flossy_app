@@ -1,7 +1,6 @@
 // External Packages
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 
 // Domain Layer
 import '../../../domain/entities/money_source.dart';
@@ -55,7 +54,7 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
     if (currentState is! MoneySourcesLoaded) return;
 
     try {
-      final newSource = MoneySource(
+      final sourceToAdd = MoneySource(
         id: 0,
         name: name,
         balance: balance,
@@ -63,10 +62,9 @@ class MoneySourcesCubit extends Cubit<MoneySourcesState> {
         type: type,
       );
 
-      await addMoneySourceUseCase(newSource);
-
+      final savedSource = await addMoneySourceUseCase(sourceToAdd);
       final updatedList = List<MoneySource>.from(currentState.sources)
-        ..add(newSource);
+        ..add(savedSource);
       emit(MoneySourcesLoaded(updatedList));
     } catch (e) {
       emit(MoneySourcesError('فشل إضافة المصدر: ${e.toString()}'));

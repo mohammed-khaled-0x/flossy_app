@@ -1,8 +1,5 @@
-// lib/presentation/managers/cubit/transactions_cubit.dart
-
 // External Packages
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 
 // Domain Layer
 import '../../../domain/entities/money_source.dart';
@@ -48,14 +45,13 @@ class TransactionsCubit extends Cubit<TransactionsState> {
     required TransactionType type,
     required String description,
     required int sourceId,
-    String? categoryId,
+    int? categoryId, // UPDATED: Changed from String? to int?
   }) async {
     final currentState = state;
     if (currentState is! TransactionsLoaded) return;
 
     try {
       // 1. Get the current source object to calculate the new balance.
-      // We use the MoneySourcesCubit's state as the single source of truth for UI data.
       final sourceToUpdate = moneySourcesCubit.getSourceById(sourceId);
       if (sourceToUpdate == null) {
         throw Exception('المصدر المحدد غير موجود.');
@@ -66,11 +62,19 @@ class TransactionsCubit extends Cubit<TransactionsState> {
           ? sourceToUpdate.balance + amount
           : sourceToUpdate.balance - amount;
 
-      final updatedSource = sourceToUpdate.copyWith(balance: newBalance);
+      // Note: We need a copyWith method in the MoneySource entity for this to work.
+      // We will add it later if it doesn't exist.
+      final updatedSource = MoneySource(
+        id: sourceToUpdate.id,
+        name: sourceToUpdate.name,
+        balance: newBalance,
+        iconName: sourceToUpdate.iconName,
+        type: sourceToUpdate.type,
+      );
 
       // 3. Create the new transaction entity.
       final newTransaction = Transaction(
-        id: const Uuid().v4(),
+        id: 0, // UPDATED: Placeholder ID. Isar will assign the real one.
         amount: amount,
         type: type,
         date: DateTime.now(),
@@ -79,22 +83,22 @@ class TransactionsCubit extends Cubit<TransactionsState> {
         categoryId: categoryId,
       );
 
-      // 4. Call the single, atomic use case to save everything to the database.
-      await addTransactionAndUpdateSourceUseCase(newTransaction, updatedSource);
+      // 4. Call the single, atomic use case to save everything.
+      // This use case should return the final transaction object with the correct ID.
+      final savedTransaction = await addTransactionAndUpdateSourceUseCase(
+        newTransaction,
+        updatedSource,
+      );
 
       // 5. Update the UI state instantly and efficiently.
-      // No need to re-fetch from the database.
-
-      // Notify MoneySourcesCubit about the change.
       moneySourcesCubit.updateSourceInState(updatedSource);
 
-      // Update this cubit's own state.
       final updatedList = List<Transaction>.from(currentState.transactions)
-        ..insert(0, newTransaction); // Insert at the beginning for newest first
+        // Use the object returned from the use case, which has the final ID from the DB.
+        ..insert(0, savedTransaction);
       emit(TransactionsLoaded(updatedList));
     } catch (e) {
       emit(TransactionsError('حدث خطأ أثناء إضافة المعاملة: ${e.toString()}'));
-      // Optional: Re-fetch state to ensure consistency after an error
       await fetchAllTransactions();
     }
   }

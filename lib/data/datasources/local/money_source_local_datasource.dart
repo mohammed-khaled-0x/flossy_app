@@ -3,35 +3,41 @@
 import 'package:isar/isar.dart';
 import '../../models/money_source_model.dart';
 
-// The contract defining what our data source must be able to do.
 abstract class MoneySourceLocalDataSource {
   Future<List<MoneySourceModel>> getAllMoneySources();
-  Future<void> addMoneySource(MoneySourceModel source);
+  Future<MoneySourceModel> addMoneySource(MoneySourceModel source);
   Future<void> updateMoneySource(MoneySourceModel source);
-  // --- CHANGE 1: The ID is now an integer ---
   Future<void> deleteMoneySource(int id);
 }
 
-// The actual implementation of the contract using Isar.
 class MoneySourceLocalDataSourceImpl implements MoneySourceLocalDataSource {
   final Isar isar;
 
   MoneySourceLocalDataSourceImpl({required this.isar});
 
   @override
-  Future<void> addMoneySource(MoneySourceModel source) async {
-    // Isar's 'put' operation handles both creation and updates.
+  Future<MoneySourceModel> addMoneySource(MoneySourceModel source) async {
+    // This is the new, foolproof implementation.
+    late int newId;
     await isar.writeTxn(() async {
-      await isar.moneySourceModels.put(source);
+      // 1. Save the object. 'put' returns the final ID.
+      newId = await isar.moneySourceModels.put(source);
     });
+
+    // 2. After the transaction is complete, fetch the object we just saved
+    //    using its new, definitive ID.
+    final savedModel = await isar.moneySourceModels.get(newId);
+
+    // 3. If for some reason it's null, throw an error. Otherwise, return it.
+    if (savedModel == null) {
+      throw Exception("Failed to save and retrieve the new money source.");
+    }
+    return savedModel;
   }
 
   @override
-  // --- CHANGE 2: The ID is an integer ---
   Future<void> deleteMoneySource(int id) async {
     await isar.writeTxn(() async {
-      // --- CHANGE 3: Deletion is now much simpler and more efficient ---
-      // We directly use the ID to delete the object. No need to search first.
       await isar.moneySourceModels.delete(id);
     });
   }
@@ -43,7 +49,9 @@ class MoneySourceLocalDataSourceImpl implements MoneySourceLocalDataSource {
 
   @override
   Future<void> updateMoneySource(MoneySourceModel source) async {
-    // We can reuse the addMoneySource logic because 'put' handles updates.
-    await addMoneySource(source);
+    // For updates, we don't need to return the object, so the simple 'put' is fine.
+    await isar.writeTxn(() async {
+      await isar.moneySourceModels.put(source);
+    });
   }
 }

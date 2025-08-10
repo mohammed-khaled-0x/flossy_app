@@ -7,10 +7,6 @@ part 'money_source_model.g.dart';
 
 @collection
 class MoneySourceModel {
-  MoneySourceModel();
-
-  // Isar uses Id type for auto-incrementing primary keys.
-  // This will be our SINGLE source of truth for the ID.
   Id id = Isar.autoIncrement;
 
   late String name;
@@ -20,27 +16,36 @@ class MoneySourceModel {
   @enumerated
   late SourceType type;
 
-  // Converts the data model (this class) to a clean business entity.
-  // The UI layer will only interact with the MoneySource entity.
+  MoneySourceModel();
+
+  factory MoneySourceModel.fromEntity(MoneySource entity) {
+    final model = MoneySourceModel()
+      ..name = entity.name
+      ..balance = entity.balance
+      ..iconName = entity.iconName
+      ..type = entity.type;
+
+    // --- THE DEFINITIVE FIX IS HERE ---
+    // If the entity has a real ID (not the temporary '0'), it means we are
+    // updating an existing object. In that case, we MUST set the model's ID
+    // so Isar knows which object to overwrite.
+    if (entity.id != 0) {
+      model.id = entity.id;
+    }
+
+    // If entity.id IS 0, we do nothing. We let Isar's `autoIncrement`
+    // generate the new, unique ID when `put()` is called.
+
+    return model;
+  }
+
   MoneySource toEntity() {
     return MoneySource(
-      id: id, // We pass the Isar Id directly.
+      id: id,
       name: name,
       balance: balance,
       iconName: iconName,
       type: type,
     );
-  }
-
-  // Creates a data model from a clean business entity.
-  // We use this when we need to save or update an entity in the database.
-  factory MoneySourceModel.fromEntity(MoneySource entity) {
-    return MoneySourceModel()
-      ..id = entity
-          .id // The entity's ID is now assigned to the Isar ID.
-      ..name = entity.name
-      ..balance = entity.balance
-      ..iconName = entity.iconName
-      ..type = entity.type;
   }
 }

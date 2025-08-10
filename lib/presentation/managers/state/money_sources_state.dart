@@ -1,6 +1,10 @@
+// lib/presentation/managers/state/money_sources_state.dart
+
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/money_source.dart';
 
+/// The base class for all states related to money sources.
+/// It extends Equatable to allow for value-based comparisons.
 abstract class MoneySourcesState extends Equatable {
   const MoneySourcesState();
 
@@ -8,25 +12,25 @@ abstract class MoneySourcesState extends Equatable {
   List<Object> get props => [];
 }
 
+/// The initial state when the feature is first loaded.
 class MoneySourcesInitial extends MoneySourcesState {}
 
+/// The state indicating that data is being fetched.
 class MoneySourcesLoading extends MoneySourcesState {}
 
+/// The state representing that the money sources were loaded successfully.
 class MoneySourcesLoaded extends MoneySourcesState {
   final List<MoneySource> sources;
 
   const MoneySourcesLoaded(this.sources);
 
-  // <<<--- THE FINAL, GUARANTEED FIX ---
-  // We are now using the spread operator (...) to expand the list.
-  // This places each individual MoneySource object into the props list.
-  // Equatable will now compare each MoneySource object one by one.
-  // Since MoneySource itself is Equatable, this will work perfectly.
+  // This is the crucial part. Equatable will now compare the 'sources' list
+  // to determine if the state has actually changed.
   @override
-  List<Object> get props => [...sources];
-  // --- END OF CHANGE ---
+  List<Object> get props => [sources];
 }
 
+/// The state representing an error while fetching money sources.
 class MoneySourcesError extends MoneySourcesState {
   final String message;
 

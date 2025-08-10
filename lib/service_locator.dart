@@ -1,4 +1,5 @@
 // Imports from external packages
+import 'package:flutter/foundation.dart'; // <<<--- [ADD] إضافة مهمة
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,11 +29,14 @@ final sl = GetIt.instance;
 Future<void> initializeDependencies() async {
   // --- Database ---
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open([
-    MoneySourceModelSchema,
-    TransactionModelSchema,
-    CategoryModelSchema,
-  ], directory: dir.path);
+  final isar = await Isar.open(
+    [MoneySourceModelSchema, TransactionModelSchema, CategoryModelSchema],
+    // [MODIFICATION] التعديل الرئيسي هنا
+    // We only enable the inspector in debug builds.
+    // kDebugMode is a constant from flutter/foundation.dart
+    inspector: kDebugMode,
+    directory: dir.path,
+  );
   sl.registerSingleton<Isar>(isar);
 
   await _seedDefaultData(isar);
@@ -50,7 +54,11 @@ Future<void> initializeDependencies() async {
     () => MoneySourceRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(transactionLocalDataSource: sl()),
+    () => TransactionRepositoryImpl(
+      transactionLocalDataSource: sl(),
+      // Add the missing dependency
+      moneySourceLocalDataSource: sl(),
+    ),
   );
 
   // --- UseCases ---
@@ -68,48 +76,37 @@ Future<void> initializeDependencies() async {
 
 /// Seeds the database with default categories on the first run.
 Future<void> _seedDefaultData(Isar isar) async {
-  // ... (code remains the same)
   final count = await isar.categoryModels.count();
   if (count == 0) {
     final defaultCategories = [
       CategoryModel()
-        ..id = 'cat_food'
         ..name = 'أكل و شرب'
         ..iconName = 'fastfood',
       CategoryModel()
-        ..id = 'cat_transport'
         ..name = 'مواصلات'
         ..iconName = 'directions_bus',
       CategoryModel()
-        ..id = 'cat_bills'
         ..name = 'فواتير وإيجار'
         ..iconName = 'receipt_long',
       CategoryModel()
-        ..id = 'cat_shopping'
         ..name = 'تسوق'
         ..iconName = 'shopping_bag',
       CategoryModel()
-        ..id = 'cat_entertainment'
         ..name = 'ترفيه'
         ..iconName = 'movie',
       CategoryModel()
-        ..id = 'cat_health'
         ..name = 'صحة'
         ..iconName = 'local_hospital',
       CategoryModel()
-        ..id = 'cat_gifts'
         ..name = 'هدايا'
         ..iconName = 'card_giftcard',
       CategoryModel()
-        ..id = 'cat_general'
         ..name = 'مصاريف عامة'
         ..iconName = 'attach_money',
       CategoryModel()
-        ..id = 'cat_income_salary'
         ..name = 'مرتب'
         ..iconName = 'work',
       CategoryModel()
-        ..id = 'cat_income_freelance'
         ..name = 'شغل حر'
         ..iconName = 'laptop_chromebook',
     ];
