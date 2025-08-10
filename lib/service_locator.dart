@@ -25,12 +25,15 @@ import 'domain/usecases/perform_internal_transfer.dart';
 import 'domain/usecases/add_money_source.dart';
 import 'domain/usecases/add_transaction.dart';
 import 'domain/usecases/get_all_money_sources.dart';
+import 'domain/usecases/get_all_categories.dart';
 import 'domain/usecases/get_all_transactions.dart';
 import 'domain/usecases/add_recurring_transaction.dart';
 import 'presentation/managers/cubit/recurring_transactions/recurring_transactions_cubit.dart';
 import 'domain/usecases/get_all_recurring_transactions.dart';
+import 'domain/usecases/log_recurring_payment.dart';
 import 'domain/usecases/update_recurring_transaction.dart';
 import 'domain/usecases/update_money_source.dart';
+import 'presentation/managers/cubit/categories_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -83,15 +86,23 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => GetAllTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
   sl.registerLazySingleton(() => AddTransactionAndUpdateSource(sl()));
+  sl.registerLazySingleton(() => GetAllCategories(sl()));
   sl.registerLazySingleton(() => PerformInternalTransfer(sl()));
   sl.registerLazySingleton(() => AddRecurringTransaction(sl()));
   sl.registerLazySingleton(() => GetAllRecurringTransactions(sl()));
+  sl.registerLazySingleton(() => LogRecurringPayment(sl(), sl(), sl()));
   sl.registerLazySingleton(() => UpdateRecurringTransaction(sl()));
   sl.registerFactory(
     () => RecurringTransactionsCubit(
       getAllRecurringTransactions: sl(),
       addRecurringTransaction: sl(),
+      logRecurringPayment: sl(),
       updateRecurringTransaction: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => CategoriesCubit(
+      getAllCategories: sl(),
     ),
   );
   // --- Cubits ---

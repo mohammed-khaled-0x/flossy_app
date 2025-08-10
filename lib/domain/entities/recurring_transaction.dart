@@ -52,4 +52,28 @@ class RecurringTransaction extends Equatable {
         category,
         isActive,
       ];
+
+  RecurringTransaction copyWith({
+    int? id,
+    double? amount,
+    String? description,
+    TransactionType? type,
+    RecurrencePeriod? period,
+    DateTime? nextDueDate,
+    int? sourceId,
+    Category? category,
+    bool? isActive,
+  }) {
+    return RecurringTransaction(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      period: period ?? this.period,
+      nextDueDate: nextDueDate ?? this.nextDueDate,
+      sourceId: sourceId ?? this.sourceId,
+      category: category ?? this.category,
+      isActive: isActive ?? this.isActive,
+    );
+  }
 }

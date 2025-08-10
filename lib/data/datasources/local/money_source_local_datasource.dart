@@ -8,6 +8,7 @@ abstract class MoneySourceLocalDataSource {
   Future<MoneySourceModel> addMoneySource(MoneySourceModel source);
   Future<void> updateMoneySource(MoneySourceModel source);
   Future<void> deleteMoneySource(int id);
+  Future<MoneySourceModel?> getSourceById(int id);
 }
 
 class MoneySourceLocalDataSourceImpl implements MoneySourceLocalDataSource {
@@ -53,5 +54,10 @@ class MoneySourceLocalDataSourceImpl implements MoneySourceLocalDataSource {
     await isar.writeTxn(() async {
       await isar.moneySourceModels.put(source);
     });
+  }
+
+  @override
+  Future<MoneySourceModel?> getSourceById(int id) async {
+    return await isar.moneySourceModels.get(id);
   }
 }

@@ -38,4 +38,13 @@ class MoneySourceRepositoryImpl implements MoneySourceRepository {
     final sourceModel = MoneySourceModel.fromEntity(source);
     await localDataSource.updateMoneySource(sourceModel);
   }
+
+  @override
+  Future<MoneySource?> getSourceById(int id) async {
+    final model = await localDataSource.getSourceById(id);
+    if (model != null) {
+      return model.toEntity();
+    }
+    return null;
+  }
 }

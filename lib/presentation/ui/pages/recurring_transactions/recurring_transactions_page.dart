@@ -7,6 +7,7 @@ import 'package:flossy/presentation/managers/cubit/recurring_transactions/recurr
 import 'package:flossy/presentation/managers/state/recurring_transactions_state.dart';
 import 'package:flossy/service_locator.dart';
 import 'package:intl/intl.dart';
+import 'add_edit_recurring_transaction_page.dart';
 
 class RecurringTransactionsPage extends StatelessWidget {
   const RecurringTransactionsPage({super.key});
@@ -53,16 +54,49 @@ class RecurringTransactionsPage extends StatelessWidget {
             return const Center(child: Text('ابدأ بتحميل البيانات'));
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Navigate to Add/Edit Recurring Transaction Page
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('شاشة الإضافة قيد الإنشاء!')));
+        floatingActionButton: Builder(
+          builder: (buttonContext) {
+            // This `buttonContext` is guaranteed to be below the BlocProvider
+            return FloatingActionButton(
+              onPressed: () {
+                Navigator.of(buttonContext).push(
+                  MaterialPageRoute(
+                    // Pass the Cubit instance using the correct context
+                    builder: (_) => BlocProvider.value(
+                      value: BlocProvider.of<RecurringTransactionsCubit>(
+                          buttonContext),
+                      child: const AddEditRecurringTransactionPage(),
+                    ),
+                  ),
+                );
+              },
+              child: const Icon(Icons.add),
+              tooltip: 'إضافة التزام جديد',
+            );
           },
-          child: const Icon(Icons.add),
-          tooltip: 'إضافة التزام جديد',
         ),
       ),
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  const _AddButton();
+
+  @override
+  Widget build(BuildContext context) {
+    // This context is from the Builder, so it's below the BlocProvider and can find the Cubit.
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: BlocProvider.of<RecurringTransactionsCubit>(context),
+            child: const AddEditRecurringTransactionPage(),
+          ),
+        ));
+      },
+      child: const Icon(Icons.add),
+      tooltip: 'إضافة التزام جديد',
     );
   }
 }
@@ -156,11 +190,9 @@ class RecurringTransactionCard extends StatelessWidget {
                 ),
                 if (isDue)
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement "Log Payment" logic
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('سيتم تنفيذ تسجيل الدفعة قريبًا!')));
-                    },
+                    onPressed: () => context
+                        .read<RecurringTransactionsCubit>()
+                        .logPayment(transaction),
                     icon: const Icon(Icons.check_circle_outline),
                     label: const Text('سجّل الدفعة'),
                     style: ElevatedButton.styleFrom(

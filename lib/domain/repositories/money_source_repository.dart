@@ -15,4 +15,5 @@ abstract class MoneySourceRepository {
 
   /// يحذف مصدر أموال باستخدام الـ id الخاص به.
   Future<void> deleteMoneySource(int id);
+  Future<MoneySource?> getSourceById(int id);
 }

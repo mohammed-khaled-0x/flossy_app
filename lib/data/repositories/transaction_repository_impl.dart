@@ -6,6 +6,7 @@ import '../../domain/entities/transaction.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../datasources/local/transaction_local_datasource.dart';
 import '../models/transaction_model.dart';
+import 'package:flossy/domain/entities/category.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionLocalDataSource transactionLocalDataSource;
@@ -70,5 +71,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       await isar.transactionModels.putAll([expenseModel, incomeModel]);
       await isar.moneySourceModels.putAll([fromSourceModel, toSourceModel]);
     });
+  }
+
+  @override
+  Future<List<Category>> getAllCategories() async {
+    final models = await transactionLocalDataSource.getAllCategories();
+    return models.map((model) => model.toEntity()).toList();
   }
 }

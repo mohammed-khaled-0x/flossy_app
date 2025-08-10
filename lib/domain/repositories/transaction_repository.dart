@@ -1,5 +1,6 @@
 import '../entities/money_source.dart';
 import '../entities/transaction.dart';
+import '../entities/category.dart';
 
 abstract class TransactionRepository {
   Future<List<Transaction>> getAllTransactions();
@@ -18,4 +19,6 @@ abstract class TransactionRepository {
 
   @deprecated
   Future<void> addTransaction(Transaction transaction);
+
+  Future<List<Category>> getAllCategories();
 }
